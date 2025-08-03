@@ -2,6 +2,18 @@
 
 // Import removed - using native HTML and DaisyUI classes
 import { useModal } from "~/hooks/useModal";
+
+// Helper function for safe date display
+const formatDateForDisplay = (date: Date | undefined | null): string => {
+	if (!date) return "";
+	try {
+		return date instanceof Date && !isNaN(date.getTime())
+			? date.toLocaleDateString()
+			: "";
+	} catch {
+		return "";
+	}
+};
 import {
 	Archive,
 	Download,
@@ -14,6 +26,7 @@ import {
 	List,
 	MoreVertical,
 	Music,
+	RotateCcw,
 	Search,
 	Share,
 	SortAsc,
@@ -156,6 +169,11 @@ export function AssetBrowser({
 		},
 		[],
 	);
+
+	const handleClearAllFilters = useCallback(() => {
+		setFilters({});
+		setCurrentPage(1);
+	}, []);
 
 	const handleSort = useCallback(
 		(field: SortField) => {
@@ -309,6 +327,17 @@ export function AssetBrowser({
 						)}
 					</button>
 
+					{activeFilterCount > 0 && (
+						<button
+							className="btn btn-outline btn-sm gap-2 btn-error"
+							onClick={handleClearAllFilters}
+							title="Clear all automatic sub-filters"
+						>
+							<RotateCcw size={16} />
+							Clear all
+						</button>
+					)}
+
 					<div className="dropdown dropdown-end">
 						<label tabIndex={0} className="btn btn-outline btn-sm gap-2">
 							{sortOrder === "asc" ? (
@@ -329,7 +358,7 @@ export function AssetBrowser({
 				</div>
 			</div>
 
-			{/* Active Filters */}
+			{/* Automatic Sub-Filters */}
 			{activeFilterCount > 0 && (
 				<div className="flex flex-wrap gap-2">
 					{filters.fileTypes?.map((type) => (
@@ -375,8 +404,8 @@ export function AssetBrowser({
 					)}
 					{filters.dateRange && (
 						<span className="badge badge-warning gap-2">
-							Date: {filters.dateRange.from.toLocaleDateString()} -{" "}
-							{filters.dateRange.to.toLocaleDateString()}
+							Date: {formatDateForDisplay(filters.dateRange.from)} -{" "}
+							{formatDateForDisplay(filters.dateRange.to)}
 							<button 
 								className="btn btn-xs btn-ghost"
 								onClick={() => handleFilterChange({ dateRange: undefined })}

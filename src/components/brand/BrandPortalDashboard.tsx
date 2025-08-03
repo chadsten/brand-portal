@@ -431,7 +431,7 @@ export function BrandPortalDashboard() {
 										<div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg border border-base-300 bg-base-200">
 											{asset.thumbnailKey ? (
 												<img
-													src={`/api/assets/serve/${asset.thumbnailKey}`}
+													src={`/api/assets/${asset.id}/thumbnail`}
 													alt={asset.name}
 													className="h-full w-full rounded-lg object-cover"
 												/>

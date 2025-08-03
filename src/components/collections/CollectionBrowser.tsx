@@ -230,11 +230,11 @@ export function CollectionBrowser() {
 						</div>
 					</div>
 
-					{/* Active Filters */}
+					{/* Automatic Sub-Filters */}
 					{activeFilterCount > 0 && (
 						<div className="flex flex-wrap items-center gap-2">
 							<span className="text-base-content/70 text-sm">
-								Active filters:
+								Automatic sub-filters:
 							</span>
 							{filters.query && (
 								<span className="badge badge-outline gap-2">

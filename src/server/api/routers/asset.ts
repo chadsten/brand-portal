@@ -24,6 +24,7 @@ import {
 	users,
 } from "~/server/db/schema";
 import { usageTracker } from "~/server/storage/usage";
+import { generateThumbnailToken } from "~/server/utils/signed-tokens";
 
 // Utility function to get organization ID from context
 function getOrganizationId(ctx: {
@@ -733,5 +734,46 @@ export const assetRouter = createTRPCRouter({
 				.map(([tag, count]) => ({ tag, count }));
 
 			return popularTags;
+		}),
+
+	// Get signed thumbnail URL
+	getThumbnailUrl: protectedProcedure
+		.input(z.object({ assetId: z.string().uuid() }))
+		.query(async ({ ctx, input }) => {
+			const organizationId = getOrganizationId(ctx);
+
+			// Check permissions
+			const hasPermission = await checkAssetPermission(ctx, input.assetId, "view");
+			if (!hasPermission) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You don't have permission to view this asset",
+				});
+			}
+
+			// Verify asset exists
+			const asset = await ctx.db.query.assets.findFirst({
+				where: and(
+					eq(assets.id, input.assetId),
+					eq(assets.organizationId, organizationId),
+					isNull(assets.deletedAt),
+				),
+			});
+
+			if (!asset) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Asset not found",
+				});
+			}
+
+			// Generate signed token
+			const token = generateThumbnailToken(input.assetId, organizationId);
+			const signedUrl = `/api/assets/${input.assetId}/thumbnail?token=${encodeURIComponent(token)}`;
+
+			return {
+				url: signedUrl,
+				expiresAt: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+			};
 		}),
 });

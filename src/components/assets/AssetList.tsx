@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { formatBytes, formatDistanceToNow } from "~/lib/utils";
 import type { Asset } from "./AssetGrid";
+import { ThumbnailImage } from "./ThumbnailImage";
 
 export interface AssetListProps {
 	assets: Asset[];
@@ -36,16 +37,6 @@ export function AssetList({
 	sortOrder,
 	getFileTypeIcon,
 }: AssetListProps) {
-	const getThumbnailUrl = (asset: Asset) => {
-		if (asset.thumbnailKey) {
-			return `/api/assets/${asset.id}/thumbnail`;
-		}
-		if (asset.mimeType.startsWith("image/")) {
-			return `/api/assets/${asset.id}/download`;
-		}
-		return null;
-	};
-
 	const getProcessingStatusColor = (status: string) => {
 		switch (status) {
 			case "completed":
@@ -75,24 +66,15 @@ export function AssetList({
 	);
 
 	const renderAssetPreview = (asset: Asset) => {
-		const thumbnailUrl = getThumbnailUrl(asset);
-		const FileIcon = getFileTypeIcon(asset.mimeType);
-
-		if (thumbnailUrl) {
-			return (
-				<img
-					src={thumbnailUrl}
-					alt={asset.title}
-					className="h-12 w-12 rounded-lg object-cover"
-					loading="lazy"
-				/>
-			);
-		}
-
 		return (
-			<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-base-200">
-				<FileIcon size={24} className="text-base-content/60" />
-			</div>
+			<ThumbnailImage
+				assetId={asset.id}
+				assetTitle={asset.title}
+				mimeType={asset.mimeType}
+				thumbnailKey={asset.thumbnailKey}
+				className="h-12 w-12 rounded-lg object-cover"
+				getFileTypeIcon={getFileTypeIcon}
+			/>
 		);
 	};
 

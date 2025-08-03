@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { formatBytes, formatDistanceToNow } from "~/lib/utils";
+import { ThumbnailImage } from "./ThumbnailImage";
 
 export interface Asset {
 	id: string;
@@ -57,16 +58,6 @@ export function AssetGrid({
 }: AssetGridProps) {
 	const [hoveredAsset, setHoveredAsset] = useState<string | null>(null);
 
-	const getThumbnailUrl = (asset: Asset) => {
-		if (asset.thumbnailKey) {
-			return `/api/assets/${asset.id}/thumbnail`;
-		}
-		if (asset.mimeType.startsWith("image/")) {
-			return `/api/assets/${asset.id}/download`;
-		}
-		return null;
-	};
-
 	const getProcessingStatusColor = (status: string) => {
 		switch (status) {
 			case "completed":
@@ -81,24 +72,15 @@ export function AssetGrid({
 	};
 
 	const renderAssetPreview = (asset: Asset) => {
-		const thumbnailUrl = getThumbnailUrl(asset);
-		const FileIcon = getFileTypeIcon(asset.mimeType);
-
-		if (thumbnailUrl) {
-			return (
-				<img
-					src={thumbnailUrl}
-					alt={asset.title}
-					className="h-48 w-full object-cover"
-					loading="lazy"
-				/>
-			);
-		}
-
 		return (
-			<div className="flex h-48 w-full items-center justify-center bg-base-200">
-				<FileIcon size={48} className="text-base-content/60" />
-			</div>
+			<ThumbnailImage
+				assetId={asset.id}
+				assetTitle={asset.title}
+				mimeType={asset.mimeType}
+				thumbnailKey={asset.thumbnailKey}
+				className="h-48 w-full object-cover"
+				getFileTypeIcon={getFileTypeIcon}
+			/>
 		);
 	};
 
@@ -125,7 +107,11 @@ export function AssetGrid({
 							</a>
 						</li>
 						<li>
-							<a>
+							<a 
+								href={`/api/assets/${asset.id}/download`}
+								download={asset.originalFileName}
+								onClick={(e) => e.stopPropagation()}
+							>
 								<Download size={16} />
 								Download
 							</a>

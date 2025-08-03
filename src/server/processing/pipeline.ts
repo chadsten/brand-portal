@@ -4,6 +4,7 @@ import { assets } from "~/server/db/schema";
 import { CacheManager } from "~/server/redis/cache";
 import { storageManager } from "~/server/storage";
 import { usageTracker } from "~/server/storage/usage";
+import { thumbnailGenerator } from "~/server/processing/thumbnails";
 
 export interface ProcessingJob {
 	id: string;
@@ -380,33 +381,44 @@ export class FileProcessingPipeline {
 				return { success: false, error: "Asset not found" };
 			}
 
-			// Generate thumbnail keys
-			const thumbnailSizes = ["150x150", "300x300", "600x600"];
-			const thumbnailKeys: string[] = [];
-
-			for (const size of thumbnailSizes) {
-				const thumbnailKey = storageManager.generateThumbnailKey(
-					asset.storageKey,
-					size,
-				);
-				thumbnailKeys.push(thumbnailKey);
-
-				// In a real implementation, this would:
-				// 1. Download the original file
-				// 2. Generate thumbnail using image processing library (Sharp, etc.)
-				// 3. Upload thumbnail to storage
-
-				// Simulate processing
-				await new Promise((resolve) => setTimeout(resolve, 500));
+			// Only generate thumbnails for images
+			if (!asset.mimeType.startsWith("image/")) {
+				return {
+					success: true,
+					data: {},
+				};
 			}
+
+			// Generate actual thumbnails using the ThumbnailGenerator
+			const thumbnailResults = await thumbnailGenerator.generateImageThumbnails(
+				asset.organizationId,
+				asset.id,
+				asset.storageKey,
+				["small", "medium", "large"], // Use the predefined presets
+			);
+
+			// Check if any thumbnails were generated successfully
+			const successfulThumbnails = thumbnailResults.filter(result => result.success);
+			
+			if (successfulThumbnails.length === 0) {
+				return {
+					success: false,
+					error: "Failed to generate any thumbnails",
+				};
+			}
+
+			// Return the first successful thumbnail as the primary one
+			const primaryThumbnail = successfulThumbnails[0]!;
 
 			return {
 				success: true,
 				data: {
-					thumbnailKey: thumbnailKeys[0], // Primary thumbnail
-					thumbnails: thumbnailKeys.map((key) => ({
-						key,
-						size: thumbnailSizes[thumbnailKeys.indexOf(key)],
+					thumbnailKey: primaryThumbnail.thumbnailKey,
+					thumbnails: successfulThumbnails.map((result) => ({
+						key: result.thumbnailKey,
+						preset: result.preset,
+						size: result.size,
+						dimensions: result.dimensions,
 					})),
 				},
 			};

@@ -214,12 +214,12 @@ export function CollectionDetailModal({
 						<div
 							className="flex h-12 w-12 items-center justify-center rounded-lg text-xl"
 							style={{
-								background: collection.coverAsset?.thumbnailKey
-									? `url(/api/assets/serve/${collection.coverAsset.thumbnailKey}) center/cover`
+								background: collection.coverAsset?.id
+									? `url(/api/assets/${collection.coverAsset.id}/thumbnail) center/cover`
 									: `linear-gradient(135deg, ${collection.color || "#6366f1"}20, ${collection.color || "#6366f1"}40)`,
 							}}
 						>
-							{!collection.coverAsset?.thumbnailKey && (
+							{!collection.coverAsset?.id && (
 								<span>{collection.icon || "📁"}</span>
 							)}
 						</div>

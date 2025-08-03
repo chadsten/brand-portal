@@ -70,7 +70,15 @@
       "Bash(npx drizzle-kit:*)",
       "Bash(timeout:*)",
       "Bash(yarn install)",
-      "Bash(yarn tsx:*)"
+      "Bash(yarn tsx:*)",
+      "Bash(git restore:*)",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(tsx test-thumbnail-debug.js:*)",
+      "Bash(SKIP_ENV_VALIDATION=1 npx tsx test-storage-debug.ts)",
+      "Bash(tsx scripts/restore-non-image-assets.ts:*)"
     ],
     "deny": []
   }

@@ -28,6 +28,7 @@ import { useState } from "react";
 import { formatBytes, formatDistanceToNow } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { BaseModal } from "../ui/BaseModal";
+import { ThumbnailImage } from "./ThumbnailImage";
 
 export interface AssetDetailModalProps {
 	assetId: string;
@@ -94,23 +95,13 @@ export function AssetDetailModal({
 		);
 	}
 
-	const getThumbnailUrl = () => {
-		if (asset.thumbnailKey) {
-			return `/api/assets/${asset.id}/thumbnail`;
-		}
-		if (asset.mimeType.startsWith("image/")) {
-			return `/api/assets/${asset.id}/download`;
-		}
-		return null;
-	};
-
-	const getFileTypeIcon = () => {
-		if (asset.mimeType.startsWith("image/")) return ImageIcon;
-		if (asset.mimeType.startsWith("video/")) return Video;
-		if (asset.mimeType.startsWith("audio/")) return Music;
-		if (asset.mimeType.includes("pdf") || asset.mimeType.includes("document"))
+	const getFileTypeIcon = (mimeType: string) => {
+		if (mimeType.startsWith("image/")) return ImageIcon;
+		if (mimeType.startsWith("video/")) return Video;
+		if (mimeType.startsWith("audio/")) return Music;
+		if (mimeType.includes("pdf") || mimeType.includes("document"))
 			return FileText;
-		if (asset.mimeType.includes("zip") || asset.mimeType.includes("archive"))
+		if (mimeType.includes("zip") || mimeType.includes("archive"))
 			return Archive;
 		return FileText;
 	};
@@ -136,24 +127,16 @@ export function AssetDetailModal({
 	};
 
 	const renderPreview = () => {
-		const thumbnailUrl = getThumbnailUrl();
-		const FileIcon = getFileTypeIcon();
-
-		if (thumbnailUrl) {
-			return (
-				<div className="mx-auto w-full max-w-md">
-					<img
-						src={thumbnailUrl}
-						alt={asset.title}
-						className="w-full rounded-lg"
-					/>
-				</div>
-			);
-		}
-
 		return (
-			<div className="mx-auto flex h-64 w-full max-w-md items-center justify-center rounded-lg bg-base-200">
-				<FileIcon size={64} className="text-base-content/60" />
+			<div className="mx-auto w-full max-w-md">
+				<ThumbnailImage
+					assetId={asset.id}
+					assetTitle={asset.title}
+					mimeType={asset.mimeType}
+					thumbnailKey={asset.thumbnailKey}
+					className="w-full rounded-lg object-contain max-h-96"
+					getFileTypeIcon={getFileTypeIcon}
+				/>
 			</div>
 		);
 	};

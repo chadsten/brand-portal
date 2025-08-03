@@ -2,6 +2,7 @@
 
 import {
 	Calendar,
+	ChevronDown,
 	HardDrive,
 	RotateCcw,
 	Search,
@@ -12,6 +13,29 @@ import {
 import { useEffect, useState } from "react";
 import { formatBytes } from "~/lib/utils";
 import { api } from "~/trpc/react";
+
+// Helper functions for safe date handling
+const formatDateForInput = (date: Date | undefined | null): string => {
+	if (!date) return "";
+	try {
+		return date instanceof Date && !isNaN(date.getTime()) 
+			? date.toISOString().split("T")[0]
+			: "";
+	} catch {
+		return "";
+	}
+};
+
+const formatDateForDisplay = (date: Date | undefined | null): string => {
+	if (!date) return "";
+	try {
+		return date instanceof Date && !isNaN(date.getTime())
+			? date.toLocaleDateString()
+			: "";
+	} catch {
+		return "";
+	}
+};
 
 export interface AssetFiltersProps {
 	filters: {
@@ -74,6 +98,8 @@ const SIZE_PRESETS = [
 export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 	const [localFilters, setLocalFilters] = useState(filters);
 	const [sizeRange, setSizeRange] = useState([0, 1000 * 1024 * 1024]); // 0 to 1GB
+	const [collectionsDropdownOpen, setCollectionsDropdownOpen] = useState(false);
+	const [collectionsSearchTerm, setCollectionsSearchTerm] = useState("");
 
 	// API queries for filter options
 	// TODO: Implement getTags and getUploaders endpoints
@@ -148,6 +174,8 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 		};
 		setLocalFilters(clearedFilters);
 		setSizeRange([0, 1000 * 1024 * 1024]);
+		setCollectionsDropdownOpen(false);
+		setCollectionsSearchTerm("");
 		onChange(clearedFilters);
 	};
 
@@ -162,8 +190,7 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 	return (
 		<div className="space-y-6">
 			{/* Quick Actions */}
-			<div className="flex items-center justify-between">
-				<h3 className="font-semibold text-lg">Filter Assets</h3>
+			<div className="flex items-center justify-end">
 				<button
 					className="btn btn-sm btn-ghost gap-2"
 					onClick={handleClearAll}
@@ -173,40 +200,12 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 				</button>
 			</div>
 
-			{/* Search Query */}
-			<div className="card bg-base-100 shadow">
-				<div className="card-body">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Search Query</span>
-						</label>
-						<div className="relative">
-							<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
-							<input
-								type="text"
-								className="input input-bordered w-full pl-10 pr-10"
-								placeholder="Search in titles, descriptions, and filenames..."
-								value={localFilters.query || ""}
-								onChange={(e) => handleFilterChange("query", e.target.value)}
-							/>
-							{localFilters.query && (
-								<button
-									className="absolute right-3 top-1/2 transform -translate-y-1/2 btn btn-ghost btn-xs"
-									onClick={() => handleFilterChange("query", "")}
-								>
-									<X size={12} />
-								</button>
-							)}
-						</div>
-					</div>
-				</div>
-			</div>
 
 			{/* File Types */}
 			<div className="card bg-base-100 shadow">
 				<div className="card-body">
 					<h4 className="card-title">File Types</h4>
-					<div className="space-y-2">
+					<div className="grid grid-cols-2 gap-2">
 						{FILE_TYPE_OPTIONS.map((option) => {
 							const isChecked = getSelectedFileTypeCategories().includes(option.value);
 							return (
@@ -233,12 +232,11 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 				</div>
 			</div>
 
-			{/* File Size */}
+			{/* File Size - Commented out for potential future use
 			<div className="card bg-base-100 shadow">
 				<div className="card-body">
 					<h4 className="card-title">File Size</h4>
 					<div className="space-y-4">
-						{/* Size Presets */}
 						<div className="grid grid-cols-2 gap-2">
 							{SIZE_PRESETS.map((preset) => (
 								<button
@@ -253,7 +251,6 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 
 						<div className="divider"></div>
 
-						{/* Custom Range */}
 						<div className="space-y-2">
 							<div className="flex justify-between text-base-content/60 text-sm">
 								<span>{formatBytes(sizeRange[0] || 0)}</span>
@@ -263,8 +260,8 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 								type="range"
 								className="range range-sm w-full"
 								min={0}
-								max={1000 * 1024 * 1024} // 1GB
-								step={1024 * 1024} // 1MB steps
+								max={1000 * 1024 * 1024}
+								step={1024 * 1024}
 								value={sizeRange[1] || 0}
 								onChange={(e) => {
 									const value = parseInt(e.target.value);
@@ -275,12 +272,13 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 					</div>
 				</div>
 			</div>
+			*/}
 
 			{/* Upload Date */}
 			<div className="card bg-base-100 shadow">
 				<div className="card-body">
 					<h4 className="card-title">Upload Date</h4>
-					<div className="space-y-4">
+					<div className="grid grid-cols-2 gap-4">
 						<div className="form-control">
 							<label className="label">
 								<span className="label-text">From Date</span>
@@ -288,9 +286,7 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 							<input
 								type="date"
 								className="input input-bordered w-full"
-								value={
-									localFilters.dateRange?.from.toISOString().split("T")[0] || ""
-								}
+								value={formatDateForInput(localFilters.dateRange?.from)}
 								onChange={(e) => {
 									const from = new Date(e.target.value);
 									const to = localFilters.dateRange?.to || new Date();
@@ -305,9 +301,7 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 							<input
 								type="date"
 								className="input input-bordered w-full"
-								value={
-									localFilters.dateRange?.to.toISOString().split("T")[0] || ""
-								}
+								value={formatDateForInput(localFilters.dateRange?.to)}
 								onChange={(e) => {
 									const to = new Date(e.target.value);
 									const from = localFilters.dateRange?.from || new Date();
@@ -401,34 +395,88 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 				<div className="card bg-base-100 shadow">
 					<div className="card-body">
 						<h4 className="card-title">Collections</h4>
-						<div className="space-y-3 max-h-48 overflow-y-auto">
-							{collections.collections.map((collection) => {
-								const isChecked = (localFilters.collections || []).includes(collection.id);
-								return (
-									<div key={collection.id} className="form-control">
-										<label className="cursor-pointer label justify-start gap-3">
-											<input
-												type="checkbox"
-												className="checkbox checkbox-sm"
-												checked={isChecked}
-												onChange={(e) => {
-													const currentCollections = localFilters.collections || [];
-													const newCollections = e.target.checked
-														? [...currentCollections, collection.id]
-														: currentCollections.filter(c => c !== collection.id);
-													handleFilterChange("collections", newCollections);
-												}}
-											/>
-											<div className="flex items-center gap-2">
-												<span className="label-text">{collection.name}</span>
-												<span className="badge badge-sm badge-neutral">
-													{collection.assetCount}
-												</span>
-											</div>
-										</label>
+						<div className="dropdown w-full" data-open={collectionsDropdownOpen || undefined}>
+							<div
+								tabIndex={0}
+								role="button"
+								className="btn btn-outline w-full justify-between"
+								onClick={() => setCollectionsDropdownOpen(!collectionsDropdownOpen)}
+								onBlur={(e) => {
+									// Only close if the click is outside the dropdown
+									if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+										setCollectionsDropdownOpen(false);
+										setCollectionsSearchTerm("");
+									}
+								}}
+							>
+								<span>
+									{localFilters.collections?.length
+										? `${localFilters.collections.length} collection${localFilters.collections.length > 1 ? 's' : ''} selected`
+										: "Select collections"}
+								</span>
+								<ChevronDown size={16} className={`transition-transform ${collectionsDropdownOpen ? 'rotate-180' : ''}`} />
+							</div>
+							{collectionsDropdownOpen && (
+								<div className="dropdown-content menu bg-base-100 rounded-box z-10 w-full p-2 shadow-lg border border-base-300 max-h-64 overflow-hidden flex flex-col">
+									{/* Search Input */}
+									<div className="relative mb-2 flex-shrink-0">
+										<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
+										<input
+											type="text"
+											className="input input-sm w-full pl-10"
+											placeholder="Search collections..."
+											value={collectionsSearchTerm}
+											onChange={(e) => setCollectionsSearchTerm(e.target.value)}
+											onClick={(e) => e.stopPropagation()}
+										/>
 									</div>
-								);
-							})}
+									
+									{/* Collection Options */}
+									<div className="overflow-y-auto flex-1">
+										{collections.collections
+											.filter((collection) =>
+												collection.name.toLowerCase().includes(collectionsSearchTerm.toLowerCase())
+											)
+											.map((collection) => {
+												const isChecked = (localFilters.collections || []).includes(collection.id);
+												return (
+													<li key={collection.id} className="w-full">
+														<label className="cursor-pointer flex items-center gap-3 px-3 py-2 hover:bg-base-200 rounded-lg w-full">
+															<input
+																type="checkbox"
+																className="checkbox checkbox-sm"
+																checked={isChecked}
+																onChange={(e) => {
+																	e.stopPropagation();
+																	const currentCollections = localFilters.collections || [];
+																	const newCollections = e.target.checked
+																		? [...currentCollections, collection.id]
+																		: currentCollections.filter(c => c !== collection.id);
+																	handleFilterChange("collections", newCollections);
+																}}
+															/>
+															<div className="flex items-center gap-2 flex-1">
+																<span className="text-sm">{collection.name}</span>
+																<span className="badge badge-xs badge-neutral">
+																	{collection.assetCount}
+																</span>
+															</div>
+														</label>
+													</li>
+												);
+											})}
+										{collections.collections
+											.filter((collection) =>
+												collection.name.toLowerCase().includes(collectionsSearchTerm.toLowerCase())
+											)
+											.length === 0 && (
+											<li className="px-3 py-2 text-base-content/60 text-sm">
+												No collections found
+											</li>
+										)}
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
@@ -443,7 +491,7 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 				localFilters.collections?.length) && (
 				<div className="card bg-base-100 shadow">
 					<div className="card-header p-4 border-b border-base-300">
-						<h4 className="font-medium">Active Filters</h4>
+						<h4 className="font-medium">Automatic Sub-Filters</h4>
 					</div>
 					<div className="card-body">
 						<div className="flex flex-wrap gap-2">
@@ -483,6 +531,26 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 									</button>
 								</span>
 							))}
+							{localFilters.collections?.map((collectionId) => {
+								const collection = collections?.collections?.find(c => c.id === collectionId);
+								return (
+									<span
+										key={collectionId}
+										className="badge badge-sm badge-info gap-2"
+									>
+										{collection?.name || collectionId}
+										<button
+											className="btn btn-xs btn-ghost p-0 min-h-0 h-4 w-4"
+											onClick={() => {
+												const newCollections = localFilters.collections?.filter((c) => c !== collectionId);
+												handleFilterChange("collections", newCollections);
+											}}
+										>
+											<X size={12} />
+										</button>
+									</span>
+								);
+							})}
 							{localFilters.uploadedBy && (
 								<span
 									className="badge badge-sm badge-success gap-2"
@@ -504,8 +572,8 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 								<span
 									className="badge badge-sm badge-warning gap-2"
 								>
-									{localFilters.dateRange.from.toLocaleDateString()} -{" "}
-									{localFilters.dateRange.to.toLocaleDateString()}
+									{formatDateForDisplay(localFilters.dateRange.from)} -{" "}
+									{formatDateForDisplay(localFilters.dateRange.to)}
 									<button
 										className="btn btn-xs btn-ghost p-0 min-h-0 h-4 w-4"
 										onClick={() => handleFilterChange("dateRange", undefined)}

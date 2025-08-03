@@ -4,27 +4,52 @@ import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { assets } from "~/server/db/schema";
 import { storageManager } from "~/server/storage";
+import { verifyThumbnailToken } from "~/server/utils/signed-tokens";
 
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: { id: string } }
 ) {
 	try {
-		const session = await auth();
-		if (!session?.user?.id) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-
 		const assetId = params.id;
 		if (!assetId) {
 			return NextResponse.json({ error: "Asset ID required" }, { status: 400 });
+		}
+
+		// Check for token-based authentication first
+		const url = new URL(request.url);
+		const token = url.searchParams.get("token");
+		
+		let organizationId: string;
+		let isAuthenticated = false;
+
+		if (token) {
+			// Verify signed token
+			const tokenPayload = verifyThumbnailToken(token);
+			if (!tokenPayload || tokenPayload.assetId !== assetId) {
+				return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+			}
+			organizationId = tokenPayload.organizationId;
+			isAuthenticated = true;
+		} else {
+			// Fallback to session-based authentication
+			const session = await auth();
+			if (!session?.user?.id || !session.user.organizationId) {
+				return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			}
+			organizationId = session.user.organizationId;
+			isAuthenticated = true;
+		}
+
+		if (!isAuthenticated) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		// Get asset from database
 		const asset = await db.query.assets.findFirst({
 			where: and(
 				eq(assets.id, assetId),
-				eq(assets.organizationId, session.user.organizationId!),
+				eq(assets.organizationId, organizationId),
 				isNull(assets.deletedAt),
 			),
 		});

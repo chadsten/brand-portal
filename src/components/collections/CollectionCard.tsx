@@ -73,8 +73,8 @@ export function CollectionCard({
 	const shareCount = collection._count?.shares || 0;
 
 	const getCoverImage = () => {
-		if (collection.coverAsset?.thumbnailKey) {
-			return `/api/assets/serve/${collection.coverAsset.thumbnailKey}`;
+		if (collection.coverAsset?.id) {
+			return `/api/assets/${collection.coverAsset.id}/thumbnail`;
 		}
 		return null;
 	};

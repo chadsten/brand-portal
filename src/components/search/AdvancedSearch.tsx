@@ -466,7 +466,7 @@ export function AdvancedSearch({
 							/>
 							<div role="tabpanel" className="tab-content">{selectedTab === "filters" && (
 								<div className="space-y-4 pt-4">
-									{/* Active Filters */}
+									{/* Automatic Sub-Filters */}
 									{filters.map((filter) => (
 										<div key={filter.id} className="flex items-start gap-2">
 											<div className="w-48">

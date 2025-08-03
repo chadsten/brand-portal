@@ -496,7 +496,7 @@ export function BrandApprovalWorkflow() {
 											<div className="flex h-16 w-16 items-center justify-center rounded-lg border border-default-200 bg-default-50">
 												{approval.asset.thumbnailKey ? (
 													<img
-														src={`/api/assets/serve/${approval.asset.thumbnailKey}`}
+														src={`/api/assets/${approval.asset.id}/thumbnail`}
 														alt={approval.asset.title}
 														className="h-full w-full rounded-lg object-cover"
 													/>

@@ -1,0 +1,36 @@
+GOAL: Fix thumbnail authentication issue where browser <img> tags can't authenticate to the thumbnail endpoint
+
+IMPLEMENTATION: 
+1. Created a signed URL system for secure thumbnail access using HMAC SHA-256 tokens
+   - Added `src/server/utils/signed-tokens.ts` with token generation and verification functions
+   - Tokens include assetId, organizationId, and expiration time (1 hour)
+   - Used AUTH_SECRET from environment for signing
+
+2. Updated thumbnail endpoint to accept both session-based and token-based authentication
+   - Modified `src/app/api/assets/[id]/thumbnail/route.ts` to check for token query parameter
+   - Falls back to session authentication if no token provided
+   - Maintains backward compatibility
+
+3. Added tRPC endpoint for generating signed thumbnail URLs
+   - Added `getThumbnailUrl` procedure to asset router in `src/server/api/routers/asset.ts`
+   - Includes permission checking and asset validation
+   - Returns signed URL with expiration time
+
+4. Created reusable components for thumbnail display
+   - Added `src/hooks/useThumbnailUrl.ts` hook for fetching signed URLs
+   - Created `src/components/assets/ThumbnailImage.tsx` component with smart fallbacks
+   - Handles loading states, errors, and fallback to file type icons
+
+5. Updated existing components to use signed URLs
+   - Modified `src/components/assets/AssetGrid.tsx` to use ThumbnailImage component
+   - Updated `src/components/assets/AssetDetailModal.tsx` to use ThumbnailImage component
+   - Updated `src/components/assets/AssetList.tsx` to use ThumbnailImage component
+
+TECHNICAL DETAILS:
+- Token format: base64url(payload).base64url(hmac_signature)
+- Token expiry: 3600 seconds (1 hour)
+- Security: Uses timing-safe comparison for token verification
+- Performance: 30-minute stale time on tRPC queries
+- Fallbacks: File type icons when thumbnails fail to load
+
+COMPLETED: 2025-08-02-23-10

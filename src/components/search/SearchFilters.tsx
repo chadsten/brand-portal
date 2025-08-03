@@ -341,10 +341,10 @@ export function SearchFilters({
 				)}
 			</div>
 			<div className="card-body p-0">
-				{/* Active Filters Summary */}
+				{/* Automatic Sub-Filters Summary */}
 				{activeFilterCount > 0 && (
 					<div className="border-base-300 border-b p-4">
-						<p className="mb-2 font-medium text-sm">Active Filters:</p>
+						<p className="mb-2 font-medium text-sm">Automatic Sub-Filters:</p>
 						<div className="flex flex-wrap gap-2">
 							{Object.entries(activeFilters).map(([groupId, value]) => {
 								if (!value || (Array.isArray(value) && value.length === 0))

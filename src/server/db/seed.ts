@@ -654,7 +654,7 @@ async function seedDatabase() {
 						mimeType: assetData.mimeType,
 						fileSize: assetData.fileSize,
 						storageKey: storageKey,
-						thumbnailKey: assetData.fileType === "image" ? `test-thumbnails/${randomUUID()}-thumb.jpg` : null,
+						thumbnailKey: null, // Don't set fake thumbnail keys - let images use original file
 						storageProvider: "default",
 						title: assetData.title,
 						description: assetData.description,
