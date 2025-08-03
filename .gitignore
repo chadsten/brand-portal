@@ -45,5 +45,6 @@ yarn-error.log*
 # idea files
 .idea
 
-# seed assets - test files for development
+# custom stuff
 /seed-assets/
+.claude
