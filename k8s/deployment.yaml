@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brand-portal-app
+  labels:
+    app: brand-portal
+    component: app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: brand-portal
+      component: app
+  template:
+    metadata:
+      labels:
+        app: brand-portal
+        component: app
+    spec:
+      containers:
+      - name: app
+        image: brand-portal:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: brand-portal-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: brand-portal-secrets
+              key: redis-url
+        - name: AUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: brand-portal-secrets
+              key: auth-secret
+        - name: NEXTAUTH_URL
+          valueFrom:
+            configMapKeyRef:
+              name: brand-portal-config
+              key: nextauth-url
+        - name: NEXT_PUBLIC_APP_URL
+          valueFrom:
+            configMapKeyRef:
+              name: brand-portal-config
+              key: app-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      imagePullSecrets:
+      - name: docker-registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: brand-portal-service
+  labels:
+    app: brand-portal
+spec:
+  selector:
+    app: brand-portal
+    component: app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: brand-portal-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - brandportal.yourdomain.com
+    secretName: brand-portal-tls
+  rules:
+  - host: brandportal.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: brand-portal-service
+            port:
+              number: 80

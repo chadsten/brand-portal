@@ -1,0 +1,50 @@
+GOAL: Clean up modal UI system to be DRY and improve asset modal usability
+
+IMPLEMENTATION:
+1. Created BaseModal component (src/components/ui/BaseModal.tsx)
+   - Uses native HTML dialog element with DaisyUI styling
+   - Built-in backdrop click handling and X button
+   - Consistent sizing and positioning options
+   - Proper accessibility with ESC key support
+
+2. Updated AssetDetailModal (src/components/assets/AssetDetailModal.tsx)
+   - Refactored to use BaseModal wrapper
+   - Moved controls from header to below thumbnail (Download, Share, Edit, Delete)
+   - Added "Add to Collection" button with FolderPlus icon
+   - Moved "Upload Information" from Details tab to top of Versions tab
+   - Cleaned up header to only show title and X close button
+
+3. Updated AssetBrowser (src/components/assets/AssetBrowser.tsx)
+   - Replaced custom dialog with BaseModal for filters modal
+   - Updated AssetDetailModal integration to pass isOpen prop
+   - Added CollectionSelectorModal integration
+
+4. Updated Collection Modals
+   - CollectionCreateModal: Converted to use BaseModal
+   - CollectionDetailModal: Converted to use BaseModal
+   - Removed manual backdrop and close button handling
+
+5. Created CollectionSelectorModal (src/components/assets/CollectionSelectorModal.tsx)
+   - Allows selecting multiple collections to add assets to
+   - Search functionality for finding collections
+   - Visual collection cards with checkboxes
+   - Proper state management and API integration hooks
+
+FEATURES IMPLEMENTED:
+- Consistent modal behavior across the application
+- Click outside modal to close (backdrop handling)
+- X button in top-right corner of all modals
+- Asset modal controls repositioned below thumbnail
+- Upload Information moved to Versions tab
+- Add to Collection functionality with dedicated modal
+- Proper DaisyUI dialog patterns throughout
+
+TECHNICAL DETAILS:
+- Uses native `<dialog>` element for accessibility
+- Implements `modal-backdrop` for click-outside closing
+- X button positioned using `absolute right-2 top-2`
+- Modal sizing with consistent classes (`w-11/12 max-w-*`)
+- Proper TypeScript interfaces and props
+- Maintains existing functionality while improving UX
+
+COMPLETED: 2025-08-02-17-57

@@ -1,0 +1,6 @@
+- Use HeroUI under import {} from "@heroui/react" for all UI components when possible.
+- When you are making new UI components look for examples in the Context7 MCP under Library ID: /daisyui/
+- The only npm scripts you need to run are:
+  - `npm run typecheck` - checks for type errors
+  - `npm run check` - checks for linting errors
+- Do not make Drizzle migrations it is setup as code only.
