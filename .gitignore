@@ -47,4 +47,4 @@ yarn-error.log*
 
 # custom stuff
 /seed-assets/
-.claude
+/.claude
