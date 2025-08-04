@@ -787,4 +787,51 @@ export const assetApiRouter = createTRPCRouter({
 
 			return searchResults;
 		}),
+
+	// Get collections for a specific asset
+	getAssetCollections: protectedProcedure
+		.input(z.object({ assetId: z.string().uuid() }))
+		.query(async ({ ctx, input }) => {
+			const organizationId = getOrganizationId(ctx);
+			
+			// Verify asset exists and belongs to organization
+			const asset = await ctx.db.query.assets.findFirst({
+				where: and(
+					eq(assets.id, input.assetId),
+					eq(assets.organizationId, organizationId),
+					isNull(assets.deletedAt),
+				),
+			});
+
+			if (!asset) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Asset not found",
+				});
+			}
+
+			// Get collections this asset belongs to
+			const assetCollectionsList = await ctx.db.query.collectionAssets.findMany({
+				where: eq(collectionAssets.assetId, input.assetId),
+				with: {
+					collection: {
+						columns: {
+							id: true,
+							name: true,
+							slug: true,
+							description: true,
+							color: true,
+							icon: true,
+							isPublic: true,
+							createdAt: true,
+							updatedAt: true,
+						},
+					},
+				},
+			});
+
+			return {
+				collections: assetCollectionsList.map((ca) => ca.collection),
+			};
+		}),
 });

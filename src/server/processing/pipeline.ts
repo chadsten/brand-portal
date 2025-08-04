@@ -334,8 +334,17 @@ export class FileProcessingPipeline {
 				},
 			];
 
-			// Add thumbnail generation for images and videos
-			if (asset.fileType === "image" || asset.fileType === "video") {
+			// Add thumbnail generation for images, videos, and documents
+			if (
+				asset.fileType === "image" || 
+				asset.fileType === "video" || 
+				asset.fileType === "document" ||
+				asset.mimeType === "application/pdf" ||
+				asset.mimeType.includes("document") ||
+				asset.mimeType.includes("officedocument") ||
+				asset.mimeType.includes("opendocument") ||
+				asset.mimeType.startsWith("text/")
+			) {
 				nextJobs.push({
 					id: "",
 					assetId: job.assetId,
@@ -381,46 +390,87 @@ export class FileProcessingPipeline {
 				return { success: false, error: "Asset not found" };
 			}
 
-			// Only generate thumbnails for images
-			if (!asset.mimeType.startsWith("image/")) {
+			// Generate thumbnails based on file type
+			if (asset.mimeType.startsWith("image/")) {
+				// Generate image thumbnails
+				const thumbnailResults = await thumbnailGenerator.generateImageThumbnails(
+					asset.organizationId,
+					asset.id,
+					asset.storageKey,
+					["small", "medium", "large"], // Use the predefined presets
+				);
+
+				// Check if any thumbnails were generated successfully
+				const successfulThumbnails = thumbnailResults.filter(result => result.success);
+				
+				if (successfulThumbnails.length === 0) {
+					return {
+						success: false,
+						error: "Failed to generate any image thumbnails",
+					};
+				}
+
+				// Return the first successful thumbnail as the primary one
+				const primaryThumbnail = successfulThumbnails[0]!;
+
 				return {
 					success: true,
-					data: {},
+					data: {
+						thumbnailKey: primaryThumbnail.thumbnailKey,
+						thumbnails: successfulThumbnails.map((result) => ({
+							key: result.thumbnailKey,
+							preset: result.preset,
+							size: result.size,
+							dimensions: result.dimensions,
+						})),
+					},
 				};
 			}
 
-			// Generate actual thumbnails using the ThumbnailGenerator
-			const thumbnailResults = await thumbnailGenerator.generateImageThumbnails(
-				asset.organizationId,
-				asset.id,
-				asset.storageKey,
-				["small", "medium", "large"], // Use the predefined presets
-			);
+			// Generate document thumbnails for PDFs, Office docs, and text files
+			if (
+				asset.mimeType === "application/pdf" ||
+				asset.mimeType.includes("document") ||
+				asset.mimeType.includes("officedocument") ||
+				asset.mimeType.includes("opendocument") ||
+				asset.mimeType === "application/msword" ||
+				asset.mimeType === "application/vnd.ms-excel" ||
+				asset.mimeType === "application/vnd.ms-powerpoint" ||
+				asset.mimeType === "application/rtf" ||
+				asset.mimeType.startsWith("text/")
+			) {
+				const documentResult = await thumbnailGenerator.generateDocumentPreview(
+					asset.organizationId,
+					asset.id,
+					asset.storageKey,
+					asset.mimeType,
+				);
 
-			// Check if any thumbnails were generated successfully
-			const successfulThumbnails = thumbnailResults.filter(result => result.success);
-			
-			if (successfulThumbnails.length === 0) {
+				if (!documentResult.success) {
+					return {
+						success: false,
+						error: documentResult.error || "Failed to generate document thumbnail",
+					};
+				}
+
 				return {
-					success: false,
-					error: "Failed to generate any thumbnails",
+					success: true,
+					data: {
+						thumbnailKey: documentResult.thumbnailKey,
+						thumbnails: [{
+							key: documentResult.thumbnailKey,
+							preset: "document-preview",
+							size: documentResult.size,
+							dimensions: documentResult.dimensions,
+						}],
+					},
 				};
 			}
 
-			// Return the first successful thumbnail as the primary one
-			const primaryThumbnail = successfulThumbnails[0]!;
-
+			// For video/audio or other unsupported types, return success but no thumbnails
 			return {
 				success: true,
-				data: {
-					thumbnailKey: primaryThumbnail.thumbnailKey,
-					thumbnails: successfulThumbnails.map((result) => ({
-						key: result.thumbnailKey,
-						preset: result.preset,
-						size: result.size,
-						dimensions: result.dimensions,
-					})),
-				},
+				data: {},
 			};
 		} catch (error) {
 			return {

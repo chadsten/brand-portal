@@ -1,8 +1,15 @@
 import { eq } from "drizzle-orm";
 import sharp from "sharp";
+import { fromBuffer } from "pdf2pic";
+import { promisify } from "util";
+import * as fs from "fs";
+import * as path from "path";
+import { tmpdir } from "os";
+import { nanoid } from "nanoid";
 import { db } from "~/server/db";
 import { assets } from "~/server/db/schema";
 import { storageManager } from "~/server/storage";
+
 
 export interface ThumbnailOptions {
 	width: number;
@@ -27,6 +34,16 @@ export interface VideoThumbnailOptions {
 	height: number;
 	format: "webp" | "jpeg" | "png";
 	quality: number;
+}
+
+export interface DocumentThumbnailOptions {
+	width: number;
+	height: number;
+	format: "webp" | "jpeg" | "png";
+	quality: number;
+	page?: number; // For multi-page documents
+	fit: "cover" | "contain" | "fill" | "inside" | "outside";
+	background?: string;
 }
 
 export class ThumbnailGenerator {
@@ -245,52 +262,440 @@ export class ThumbnailGenerator {
 		}
 	}
 
-	async generateDocumentPreview(
+	async generatePdfThumbnail(
 		organizationId: string,
 		assetId: string,
 		sourceKey: string,
-		options: Partial<ThumbnailOptions> = {},
+		options: DocumentThumbnailOptions = {
+			width: 600,
+			height: 800,
+			format: "webp",
+			quality: 85,
+			page: 1,
+			fit: "inside",
+			background: "#ffffff",
+		},
 	): Promise<ThumbnailResult> {
 		try {
-			// For document previews, we'd typically use libraries like:
-			// - pdf2pic for PDFs
-			// - LibreOffice for Office documents
-			// - Puppeteer for HTML/web content
+			// Download PDF file
+			const pdfData = await storageManager.downloadFile(organizationId, sourceKey);
+			const pdfBuffer = await this.streamToBuffer(pdfData.body);
+			
+			// Use pdf2pic to convert PDF page to image
+			const pageNum = Math.max(1, options.page || 1);
+			
+			// Configure pdf2pic with high quality settings
+			const convert = fromBuffer(pdfBuffer, {
+				density: 200, // Higher DPI for better quality
+				saveFilename: "pdf-page",
+				savePath: tmpdir(),
+				format: "png", // Use PNG for initial conversion to preserve quality
+				width: Math.min(options.width * 2, 2400), // Higher resolution for better quality, capped at 2400px
+				height: Math.min(options.height * 2, 3200), // Higher resolution for better quality, capped at 3200px
+			});
 
-			const defaultOptions: ThumbnailOptions = {
-				width: 600,
-				height: 800,
-				format: "webp",
-				quality: 85,
-				fit: "inside",
-				background: "#ffffff",
-				...options,
-			};
+			// Convert the specified page
+			const result = await convert(pageNum, { responseType: "buffer" });
+			
+			if (!result.buffer) {
+				throw new Error(`Failed to convert PDF page ${pageNum} to image`);
+			}
 
-			// Simulate document preview generation
-			await new Promise((resolve) => setTimeout(resolve, 3000));
+			const pageImageBuffer = result.buffer;
 
+			// Process the image with Sharp to apply final formatting and compression
+			let pipeline = sharp(pageImageBuffer).resize(options.width, options.height, {
+				fit: options.fit,
+				background: options.background,
+				withoutEnlargement: true, // Prevent upscaling if original is smaller
+			});
+
+			// Apply format-specific processing
+			switch (options.format) {
+				case "webp":
+					pipeline = pipeline.webp({
+						quality: options.quality,
+						effort: 6,
+						smartSubsample: true,
+					});
+					break;
+				case "jpeg":
+					pipeline = pipeline.jpeg({
+						quality: options.quality,
+						progressive: true,
+						mozjpeg: true,
+					});
+					break;
+				case "png":
+					pipeline = pipeline.png({
+						quality: options.quality,
+						progressive: true,
+						compressionLevel: 9,
+					});
+					break;
+			}
+
+			const thumbnailBuffer = await pipeline.toBuffer();
+			const metadata = await sharp(thumbnailBuffer).metadata();
+
+			// Generate thumbnail key
 			const thumbnailKey = storageManager.generateThumbnailKey(
 				sourceKey,
-				"document-preview",
+				`pdf-page${pageNum}-${options.width}x${options.height}`,
+			);
+
+			// Upload thumbnail to storage
+			await storageManager.uploadFile(
+				organizationId,
+				thumbnailKey,
+				thumbnailBuffer,
+				`image/${options.format}`,
+				{
+					assetId,
+					type: "pdf_thumbnail",
+					page: `${pageNum}`,
+					originalKey: sourceKey,
+					generated: new Date().toISOString(),
+				},
 			);
 
 			return {
 				success: true,
 				thumbnailKey,
-				size: 25000, // Simulated size
+				size: thumbnailBuffer.length,
 				dimensions: {
-					width: defaultOptions.width,
-					height: defaultOptions.height,
+					width: metadata.width || options.width,
+					height: metadata.height || options.height,
 				},
 			};
 		} catch (error) {
 			return {
 				success: false,
-				error:
-					error instanceof Error
-						? error.message
-						: "Document preview generation failed",
+				error: error instanceof Error ? error.message : "PDF thumbnail generation failed",
+			};
+		}
+	}
+
+	async generateOfficeThumbnail(
+		organizationId: string,
+		assetId: string,
+		sourceKey: string,
+		options: DocumentThumbnailOptions = {
+			width: 600,
+			height: 800,
+			format: "webp",
+			quality: 85,
+			page: 1,
+			fit: "inside",
+			background: "#ffffff",
+		},
+	): Promise<ThumbnailResult> {
+		// Office document thumbnails require complex conversion that is not serverless-friendly
+		// For now, generate a placeholder thumbnail with document type information
+		try {
+			const thumbnailKey = storageManager.generateThumbnailKey(
+				sourceKey,
+				`office-placeholder-${options.width}x${options.height}`,
+			);
+
+			// Create a simple placeholder thumbnail using SVG
+			const mimeType = await this.detectMimeType(organizationId, sourceKey);
+			const docType = this.getDocumentTypeFromMime(mimeType);
+			
+			const svg = `
+				<svg width="${options.width}" height="${options.height}" xmlns="http://www.w3.org/2000/svg">
+					<rect width="100%" height="100%" fill="${options.background || "#f8f9fa"}"/>
+					<rect x="10%" y="10%" width="80%" height="80%" rx="8" fill="#ffffff" stroke="#dee2e6" stroke-width="2"/>
+					<circle cx="50%" cy="35%" r="15%" fill="#6c757d"/>
+					<text x="50%" y="60%" text-anchor="middle" font-family="Arial, sans-serif" font-size="${Math.max(16, options.width / 20)}" font-weight="bold" fill="#495057">
+						${docType}
+					</text>
+					<text x="50%" y="75%" text-anchor="middle" font-family="Arial, sans-serif" font-size="${Math.max(12, options.width / 30)}" fill="#6c757d">
+						Document
+					</text>
+				</svg>
+			`;
+
+			// Convert SVG to image using Sharp
+			const svgBuffer = Buffer.from(svg);
+			let pipeline = sharp(svgBuffer).resize(options.width, options.height, {
+				fit: options.fit,
+				background: options.background,
+			});
+
+			// Apply format-specific processing
+			switch (options.format) {
+				case "webp":
+					pipeline = pipeline.webp({
+						quality: options.quality,
+						effort: 6,
+						smartSubsample: true,
+					});
+					break;
+				case "jpeg":
+					pipeline = pipeline.jpeg({
+						quality: options.quality,
+						progressive: true,
+						mozjpeg: true,
+					});
+					break;
+				case "png":
+					pipeline = pipeline.png({
+						quality: options.quality,
+						progressive: true,
+						compressionLevel: 9,
+					});
+					break;
+			}
+
+			const thumbnailBuffer = await pipeline.toBuffer();
+			const metadata = await sharp(thumbnailBuffer).metadata();
+
+			// Upload placeholder thumbnail to storage
+			await storageManager.uploadFile(
+				organizationId,
+				thumbnailKey,
+				thumbnailBuffer,
+				`image/${options.format}`,
+				{
+					assetId,
+					type: "office_placeholder",
+					originalKey: sourceKey,
+					generated: new Date().toISOString(),
+					note: "Placeholder thumbnail - office documents require server-side conversion",
+				},
+			);
+
+			return {
+				success: true,
+				thumbnailKey,
+				size: thumbnailBuffer.length,
+				dimensions: {
+					width: metadata.width || options.width,
+					height: metadata.height || options.height,
+				},
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Office document thumbnail generation failed",
+			};
+		}
+	}
+
+	async generateDocumentPreview(
+		organizationId: string,
+		assetId: string,
+		sourceKey: string,
+		mimeType: string,
+		options: Partial<DocumentThumbnailOptions> = {},
+	): Promise<ThumbnailResult> {
+		const defaultOptions: DocumentThumbnailOptions = {
+			width: 600,
+			height: 800,
+			format: "webp",
+			quality: 85,
+			page: 1,
+			fit: "inside",
+			background: "#ffffff",
+			...options,
+		};
+
+		try {
+			if (mimeType === "application/pdf") {
+				return await this.generatePdfThumbnail(
+					organizationId,
+					assetId,
+					sourceKey,
+					defaultOptions,
+				);
+			}
+
+			// Office documents
+			if (this.isOfficeDocument(mimeType)) {
+				return await this.generateOfficeThumbnail(
+					organizationId,
+					assetId,
+					sourceKey,
+					defaultOptions,
+				);
+			}
+
+			// Plain text documents
+			if (mimeType.startsWith("text/")) {
+				return await this.generateTextThumbnail(
+					organizationId,
+					assetId,
+					sourceKey,
+					defaultOptions,
+				);
+			}
+
+			// Unsupported document type
+			return {
+				success: false,
+				error: `Unsupported document type: ${mimeType}`,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Document preview generation failed",
+			};
+		}
+	}
+
+	private isOfficeDocument(mimeType: string): boolean {
+		const officeMimeTypes = [
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+			"application/msword", // .doc
+			"application/vnd.ms-excel", // .xls
+			"application/vnd.ms-powerpoint", // .ppt
+			"application/vnd.oasis.opendocument.text", // .odt
+			"application/vnd.oasis.opendocument.spreadsheet", // .ods
+			"application/vnd.oasis.opendocument.presentation", // .odp
+			"application/rtf", // .rtf
+		];
+		return officeMimeTypes.includes(mimeType);
+	}
+
+	private async detectMimeType(organizationId: string, sourceKey: string): Promise<string> {
+		// Try to detect MIME type from file extension as fallback
+		const extension = sourceKey.split('.').pop()?.toLowerCase();
+		const mimeTypeMap: Record<string, string> = {
+			'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+			'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+			'doc': 'application/msword',
+			'xls': 'application/vnd.ms-excel',
+			'ppt': 'application/vnd.ms-powerpoint',
+			'odt': 'application/vnd.oasis.opendocument.text',
+			'ods': 'application/vnd.oasis.opendocument.spreadsheet',
+			'odp': 'application/vnd.oasis.opendocument.presentation',
+			'rtf': 'application/rtf',
+		};
+		return mimeTypeMap[extension || ''] || 'application/octet-stream';
+	}
+
+	private getDocumentTypeFromMime(mimeType: string): string {
+		const typeMap: Record<string, string> = {
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'DOCX',
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'XLSX',
+			'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PPTX',
+			'application/msword': 'DOC',
+			'application/vnd.ms-excel': 'XLS',
+			'application/vnd.ms-powerpoint': 'PPT',
+			'application/vnd.oasis.opendocument.text': 'ODT',
+			'application/vnd.oasis.opendocument.spreadsheet': 'ODS',
+			'application/vnd.oasis.opendocument.presentation': 'ODP',
+			'application/rtf': 'RTF',
+		};
+		return typeMap[mimeType] || 'DOC';
+	}
+
+	private async generateTextThumbnail(
+		organizationId: string,
+		assetId: string,
+		sourceKey: string,
+		options: DocumentThumbnailOptions,
+	): Promise<ThumbnailResult> {
+		try {
+			// Download text file
+			const textData = await storageManager.downloadFile(organizationId, sourceKey);
+			const textBuffer = await this.streamToBuffer(textData.body);
+			const textContent = textBuffer.toString("utf-8");
+
+			// Take first 1000 characters for preview
+			const previewText = textContent.substring(0, 1000);
+
+			// Create a simple text preview using SVG
+			const svg = `
+				<svg width="${options.width}" height="${options.height}" xmlns="http://www.w3.org/2000/svg">
+					<rect width="100%" height="100%" fill="${options.background || "#ffffff"}"/>
+					<foreignObject x="20" y="20" width="${options.width - 40}" height="${options.height - 40}">
+						<div xmlns="http://www.w3.org/1999/xhtml" style="
+							font-family: 'Courier New', monospace;
+							font-size: 14px;
+							line-height: 1.4;
+							color: #333;
+							word-wrap: break-word;
+							overflow: hidden;
+						">
+							${previewText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+						</div>
+					</foreignObject>
+				</svg>
+			`;
+
+			// Convert SVG to image using Sharp
+			const svgBuffer = Buffer.from(svg);
+			let pipeline = sharp(svgBuffer).resize(options.width, options.height, {
+				fit: options.fit,
+				background: options.background,
+			});
+
+			// Apply format-specific processing
+			switch (options.format) {
+				case "webp":
+					pipeline = pipeline.webp({
+						quality: options.quality,
+						effort: 6,
+						smartSubsample: true,
+					});
+					break;
+				case "jpeg":
+					pipeline = pipeline.jpeg({
+						quality: options.quality,
+						progressive: true,
+						mozjpeg: true,
+					});
+					break;
+				case "png":
+					pipeline = pipeline.png({
+						quality: options.quality,
+						progressive: true,
+						compressionLevel: 9,
+					});
+					break;
+			}
+
+			const thumbnailBuffer = await pipeline.toBuffer();
+			const metadata = await sharp(thumbnailBuffer).metadata();
+
+			// Generate thumbnail key
+			const thumbnailKey = storageManager.generateThumbnailKey(
+				sourceKey,
+				`text-preview-${options.width}x${options.height}`,
+			);
+
+			// Upload thumbnail to storage
+			await storageManager.uploadFile(
+				organizationId,
+				thumbnailKey,
+				thumbnailBuffer,
+				`image/${options.format}`,
+				{
+					assetId,
+					type: "text_thumbnail",
+					originalKey: sourceKey,
+					generated: new Date().toISOString(),
+				},
+			);
+
+			return {
+				success: true,
+				thumbnailKey,
+				size: thumbnailBuffer.length,
+				dimensions: {
+					width: metadata.width || options.width,
+					height: metadata.height || options.height,
+				},
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Text thumbnail generation failed",
 			};
 		}
 	}
@@ -366,15 +771,43 @@ export class ThumbnailGenerator {
 				}
 			} else if (
 				mimeType === "application/pdf" ||
-				mimeType.includes("document")
+				this.isOfficeDocument(mimeType) ||
+				mimeType.startsWith("text/")
 			) {
 				// Generate document preview
 				const result = await this.generateDocumentPreview(
 					organizationId,
 					assetId,
 					sourceKey,
+					mimeType,
 				);
 				results.push(result);
+
+				// Also generate multiple sizes for documents like we do for images
+				if (result.success) {
+					const documentSizes = [
+						{ width: 300, height: 400, preset: "document-small" },
+						{ width: 150, height: 200, preset: "document-thumb" },
+					];
+
+					for (const size of documentSizes) {
+						const sizeResult = await this.generateDocumentPreview(
+							organizationId,
+							assetId,
+							sourceKey,
+							mimeType,
+							{
+								width: size.width,
+								height: size.height,
+								format: "webp",
+								quality: 85,
+								fit: "inside",
+								background: "#ffffff",
+							},
+						);
+						results.push(sizeResult);
+					}
+				}
 			}
 
 			return results;

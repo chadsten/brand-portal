@@ -9,6 +9,8 @@ import {
 	accounts,
 	sessions,
 	users,
+	userRoles,
+	roles,
 	verificationTokens,
 } from "~/server/db/schema";
 
@@ -23,15 +25,15 @@ declare module "next-auth" {
 		user: {
 			id: string;
 			organizationId?: string;
-			// ...other properties
-			// role: UserRole;
+			isSuperAdmin?: boolean;
+			roles?: string[];
 		} & DefaultSession["user"];
 	}
 
 	interface User {
 		organizationId?: string;
-		// ...other properties
-		// role: UserRole;
+		isSuperAdmin?: boolean;
+		roles?: string[];
 	}
 }
 
@@ -64,18 +66,28 @@ export const authConfig = {
 					];
 					
 					if (testEmails.includes(credentials.email)) {
-						// Fetch the actual user from the database
+						// Fetch the actual user from the database with roles
 						const user = await db.query.users.findFirst({
 							where: eq(users.email, credentials.email),
+							with: {
+								userRoles: {
+									with: {
+										role: true,
+									},
+								},
+							},
 						});
 
 						if (user) {
+							const userRoleNames = user.userRoles.map(ur => ur.role.name);
 							return {
 								id: user.id,
 								email: user.email,
 								name: user.name,
 								// Convert null to undefined for NextAuth compatibility
 								organizationId: user.organizationId || undefined,
+								isSuperAdmin: user.isSuperAdmin || undefined,
+								roles: userRoleNames,
 							};
 						}
 					}
@@ -108,6 +120,8 @@ export const authConfig = {
 			if (user) {
 				token.id = user.id;
 				token.organizationId = user.organizationId;
+				token.isSuperAdmin = user.isSuperAdmin;
+				token.roles = user.roles;
 			}
 			return token;
 		},
@@ -117,6 +131,8 @@ export const authConfig = {
 				...session.user,
 				id: token.id as string,
 				organizationId: token.organizationId as string | undefined,
+				isSuperAdmin: token.isSuperAdmin as boolean | undefined,
+				roles: token.roles as string[] | undefined,
 			},
 		}),
 	},

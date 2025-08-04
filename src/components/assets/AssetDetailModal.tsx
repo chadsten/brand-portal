@@ -29,6 +29,7 @@ import { formatBytes, formatDistanceToNow } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { BaseModal } from "../ui/BaseModal";
 import { ThumbnailImage } from "./ThumbnailImage";
+import { clientThumbnailService } from "~/services/clientThumbnailService";
 
 export interface AssetDetailModalProps {
 	assetId: string;
@@ -51,6 +52,13 @@ export function AssetDetailModal({
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedTitle, setEditedTitle] = useState("");
 	const [editedDescription, setEditedDescription] = useState("");
+	const [editedTags, setEditedTags] = useState<string[]>([]);
+	const [newTag, setNewTag] = useState("");
+	
+	// Thumbnail generation state
+	const [thumbnailGenerating, setThumbnailGenerating] = useState(false);
+	const [thumbnailProgress, setThumbnailProgress] = useState(0);
+	const [thumbnailMessage, setThumbnailMessage] = useState("");
 
 	// API queries
 	const {
@@ -66,6 +74,10 @@ export function AssetDetailModal({
 	});
 
 	const { data: versions } = api.asset.getVersions.useQuery({
+		assetId,
+	});
+
+	const { data: assetCollections } = api.assetApi.getAssetCollections.useQuery({
 		assetId,
 	});
 
@@ -111,12 +123,14 @@ export function AssetDetailModal({
 			id: assetId,
 			title: editedTitle,
 			description: editedDescription,
+			tags: editedTags,
 		});
 	};
 
 	const handleStartEdit = () => {
 		setEditedTitle(asset.title);
 		setEditedDescription(asset.description || "");
+		setEditedTags(Array.isArray(asset.tags) ? asset.tags as string[] : []);
 		setIsEditing(true);
 	};
 
@@ -124,6 +138,97 @@ export function AssetDetailModal({
 		setIsEditing(false);
 		setEditedTitle("");
 		setEditedDescription("");
+		setEditedTags([]);
+		setNewTag("");
+	};
+
+	const handleAddTag = () => {
+		const trimmedTag = newTag.trim();
+		if (trimmedTag && !editedTags.includes(trimmedTag)) {
+			setEditedTags([...editedTags, trimmedTag]);
+			setNewTag("");
+		}
+	};
+
+	const handleRemoveTag = (tagToRemove: string) => {
+		setEditedTags(editedTags.filter(tag => tag !== tagToRemove));
+	};
+
+	const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			handleAddTag();
+		}
+	};
+
+	const handleGenerateThumbnail = async () => {
+		if (!asset) return;
+		
+		setThumbnailGenerating(true);
+		setThumbnailProgress(0);
+		setThumbnailMessage("Starting thumbnail generation...");
+		
+		try {
+			// Download the original file
+			setThumbnailProgress(10);
+			setThumbnailMessage("Downloading original file...");
+			
+			const response = await fetch(`/api/assets/${asset.id}/download?original=true`);
+			if (!response.ok) {
+				throw new Error(`Failed to download file: ${response.statusText}`);
+			}
+			
+			const fileBlob = await response.blob();
+			setThumbnailProgress(30);
+			
+			// Generate thumbnail using client service
+			const result = await clientThumbnailService.generateThumbnail(
+				asset.id,
+				fileBlob,
+				asset.fileName,
+				asset.mimeType,
+				{
+					organizationId: asset.organizationId,
+					width: 800,
+					height: 600,
+					quality: 0.85,
+					onProgress: (progress, message) => {
+						setThumbnailProgress(progress);
+						if (message) setThumbnailMessage(message);
+					}
+				}
+			);
+			
+			if (result.success) {
+				// Refresh asset data to show new thumbnail
+				await refetch();
+				setThumbnailMessage("Thumbnail generated successfully!");
+				
+				// Show success for a moment, then reset
+				setTimeout(() => {
+					setThumbnailGenerating(false);
+					setThumbnailProgress(0);
+					setThumbnailMessage("");
+				}, 2000);
+			} else {
+				throw new Error(result.error || "Thumbnail generation failed");
+			}
+		} catch (error) {
+			console.error('Thumbnail generation failed:', error);
+			setThumbnailMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			
+			// Show error for a moment, then reset
+			setTimeout(() => {
+				setThumbnailGenerating(false);
+				setThumbnailProgress(0);
+				setThumbnailMessage("");
+			}, 3000);
+		}
+	};
+
+	const canGenerateThumbnail = () => {
+		if (!asset) return false;
+		return clientThumbnailService.isFileTypeSupported(asset.mimeType);
 	};
 
 	const renderPreview = () => {
@@ -149,6 +254,18 @@ export function AssetDetailModal({
 			<div className="card-body space-y-4">
 				{isEditing ? (
 					<>
+						<div>
+							<label className="label">
+								<span className="label-text">Title</span>
+							</label>
+							<input
+								type="text"
+								className="input input-bordered w-full"
+								value={editedTitle}
+								onChange={(e) => setEditedTitle(e.target.value)}
+								placeholder="Enter asset title"
+							/>
+						</div>
 						<div>
 							<label className="label">
 								<span className="label-text">Description</span>
@@ -362,20 +479,127 @@ export function AssetDetailModal({
 				<h3 className="font-semibold text-lg">Tags</h3>
 			</div>
 			<div className="card-body">
-				{asset.tags && Array.isArray(asset.tags) && asset.tags.length > 0 ? (
-					<div className="flex flex-wrap gap-2">
-						{(asset.tags as string[]).map((tag) => (
-							<span
-								key={tag}
-								className="badge badge-sm badge-outline gap-2"
+				{isEditing ? (
+					<div className="space-y-3">
+						{/* Existing tags */}
+						{editedTags.length > 0 && (
+							<div className="flex flex-wrap gap-2">
+								{editedTags.map((tag) => (
+									<span
+										key={tag}
+										className="badge badge-sm badge-outline gap-2"
+									>
+										<Tag size={12} />
+										{tag}
+										<button
+											type="button"
+											className="ml-1 hover:text-error"
+											onClick={() => handleRemoveTag(tag)}
+											aria-label={`Remove ${tag} tag`}
+										>
+											×
+										</button>
+									</span>
+								))}
+							</div>
+						)}
+						{/* Add new tag input */}
+						<div className="flex gap-2">
+							<input
+								type="text"
+								className="input input-bordered input-sm flex-1"
+								value={newTag}
+								onChange={(e) => setNewTag(e.target.value)}
+								onKeyDown={handleTagKeyDown}
+								placeholder="Add a tag and press Enter"
+							/>
+							<button
+								type="button"
+								className="btn btn-sm btn-outline"
+								onClick={handleAddTag}
+								disabled={!newTag.trim()}
 							>
-								<Tag size={12} />
-								{tag}
-							</span>
+								Add
+							</button>
+						</div>
+					</div>
+				) : (
+					<>
+						{asset.tags && Array.isArray(asset.tags) && asset.tags.length > 0 ? (
+							<div className="flex flex-wrap gap-2">
+								{(asset.tags as string[]).map((tag) => (
+									<span
+										key={tag}
+										className="badge badge-sm badge-outline gap-2"
+									>
+										<Tag size={12} />
+										{tag}
+									</span>
+								))}
+							</div>
+						) : (
+							<p className="text-base-content/60">No tags assigned</p>
+						)}
+					</>
+				)}
+			</div>
+		</div>
+	);
+
+	const renderCollections = () => (
+		<div className="card bg-base-100 shadow">
+			<div className="card-header p-4 border-b border-base-300">
+				<h3 className="font-semibold text-lg">Collections</h3>
+			</div>
+			<div className="card-body">
+				{assetCollections?.collections && assetCollections.collections.length > 0 ? (
+					<div className="space-y-2">
+						{assetCollections.collections.map((collection) => (
+							<div
+								key={collection.id}
+								className="flex items-center gap-3 p-2 rounded-lg border border-base-300 hover:border-primary transition-colors"
+							>
+								<div
+									className="flex h-8 w-8 items-center justify-center rounded text-sm flex-shrink-0"
+									style={{
+										background: `linear-gradient(135deg, ${collection.color || "#6366f1"}20, ${collection.color || "#6366f1"}40)`,
+									}}
+								>
+									<span>{collection.icon || "📁"}</span>
+								</div>
+								<div className="flex-1 min-w-0">
+									<h4 className="font-medium truncate">{collection.name}</h4>
+									{collection.description && (
+										<p className="text-base-content/60 text-sm truncate">
+											{collection.description}
+										</p>
+									)}
+								</div>
+								<div className="flex items-center gap-2">
+									{collection.isPublic && (
+										<span className="badge badge-xs badge-success">Public</span>
+									)}
+									<span className="text-base-content/40 text-xs">
+										{new Date(collection.createdAt).toLocaleDateString()}
+									</span>
+								</div>
+							</div>
 						))}
 					</div>
 				) : (
-					<p className="text-base-content/60">No tags assigned</p>
+					<div className="text-center py-4">
+						<FolderPlus size={32} className="mx-auto mb-2 text-base-content/40" />
+						<p className="text-base-content/60">Not in any collections</p>
+						{onAddToCollection && (
+							<button
+								className="btn btn-sm btn-primary mt-2 gap-2"
+								onClick={onAddToCollection}
+							>
+								<FolderPlus size={16} />
+								Add to Collection
+							</button>
+						)}
+					</div>
 				)}
 			</div>
 		</div>
@@ -529,6 +753,46 @@ export function AssetDetailModal({
 									Add to Collection
 								</button>
 							)}
+							
+							{/* Thumbnail Generation */}
+							{canGenerateThumbnail() && (
+								<div className="w-full">
+									<button
+										className={`btn btn-sm btn-outline w-full gap-2 ${
+											thumbnailGenerating ? 'loading' : ''
+										}`}
+										onClick={handleGenerateThumbnail}
+										disabled={thumbnailGenerating}
+									>
+										{thumbnailGenerating ? (
+											<>
+												<div className="loading loading-spinner loading-xs"></div>
+												Generating...
+											</>
+										) : (
+											<>
+												<ImageIcon size={16} />
+												Generate Thumbnail
+											</>
+										)}
+									</button>
+									
+									{/* Progress indicator */}
+									{thumbnailGenerating && (
+										<div className="mt-2 space-y-1">
+											<div className="flex justify-between text-xs">
+												<span>{thumbnailMessage}</span>
+												<span>{thumbnailProgress}%</span>
+											</div>
+											<progress 
+												className="progress progress-primary w-full" 
+												value={thumbnailProgress} 
+												max="100"
+											></progress>
+										</div>
+									)}
+								</div>
+							)}
 						</div>
 					</div>
 
@@ -548,6 +812,7 @@ export function AssetDetailModal({
 								<div className="space-y-4">
 									{renderBasicInfo()}
 									{renderTags()}
+									{renderCollections()}
 								</div>
 							</div>
 

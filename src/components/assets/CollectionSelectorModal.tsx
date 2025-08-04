@@ -26,21 +26,18 @@ export function CollectionSelectorModal({
 		data: collectionsData,
 		isLoading,
 		refetch,
-	} = api.assetApi.searchCollections?.useQuery({
+	} = api.assetApi.searchCollections.useQuery({
 		limit: 100,
 		query: searchQuery,
-	}) || { data: null, isLoading: false, refetch: () => {} };
+	});
 
-	// Mock mutation for adding asset to collections
-	const addToCollectionsMutation = {
-		mutate: (params: { assetId: string; collectionIds: string[] }) => {
-			console.log("Add asset to collections:", params);
-			setSelectedCollections(new Set());
-			onSuccess?.();
-			onClose();
+	// Real mutation for adding asset to collections
+	const addToCollectionsMutation = api.assetApi.addAssetsToCollection.useMutation({
+		onError: (error) => {
+			console.error("Failed to add asset to collections:", error);
+			// TODO: Show error toast/notification
 		},
-		isPending: false,
-	};
+	});
 
 	const collections = collectionsData?.collections || [];
 
@@ -54,13 +51,27 @@ export function CollectionSelectorModal({
 		setSelectedCollections(newSelected);
 	};
 
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		if (selectedCollections.size === 0) return;
 
-		addToCollectionsMutation.mutate({
-			assetId,
-			collectionIds: Array.from(selectedCollections),
-		});
+		// Add asset to each selected collection
+		const collectionIds = Array.from(selectedCollections);
+		
+		try {
+			for (const collectionId of collectionIds) {
+				await addToCollectionsMutation.mutateAsync({
+					collectionId,
+					assetIds: [assetId],
+				});
+			}
+			
+			// All collections added successfully
+			setSelectedCollections(new Set());
+			onSuccess?.();
+			onClose();
+		} catch (error) {
+			// Error already handled by onError callback
+		}
 	};
 
 	const handleClose = () => {

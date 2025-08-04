@@ -21,39 +21,59 @@ import {
 	assets,
 	assetVersions,
 	organizations,
+	roles,
 	users,
 } from "~/server/db/schema";
 import { usageTracker } from "~/server/storage/usage";
 import { generateThumbnailToken } from "~/server/utils/signed-tokens";
 
-// Utility function to get organization ID from context
+// Utility function to get organization ID from context - updated for site admin support
 function getOrganizationId(ctx: {
-	session: { user: { organizationId?: string } };
+	session: { user: { organizationId?: string; isSuperAdmin?: boolean } };
 }): string {
 	const orgId = ctx.session.user.organizationId;
-	if (!orgId) {
+	const isSuperAdmin = ctx.session.user.isSuperAdmin || false;
+	
+	// Site admins don't need to belong to an organization for asset management
+	if (!orgId && !isSuperAdmin) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message: "User must belong to an organization",
 		});
 	}
-	return orgId;
+	return orgId || "";
 }
 
-// Utility function to check asset permissions
+// Utility function to check asset permissions with role-based hierarchy
 async function checkAssetPermission(
-	ctx: { db: any; session: { user: { id: string; organizationId?: string } } },
+	ctx: { 
+		db: any; 
+		session: { 
+			user: { 
+				id: string; 
+				organizationId?: string; 
+				isSuperAdmin?: boolean;
+				roles?: string[];
+			} 
+		} 
+	},
 	assetId: string,
 	permission: "view" | "download" | "edit" | "delete",
 ): Promise<boolean> {
-	const organizationId = getOrganizationId(ctx);
 	const userId = ctx.session.user.id;
+	const userOrgId = ctx.session.user.organizationId;
+	const isSuperAdmin = ctx.session.user.isSuperAdmin || false;
+	const userRoles = ctx.session.user.roles || [];
 
-	// Check if asset exists and belongs to organization
+	// Site Admin (Super Admin) - has ALL permissions to ALL assets across ALL organizations
+	if (isSuperAdmin) {
+		return true;
+	}
+
+	// Check if asset exists first
 	const asset = await ctx.db.query.assets.findFirst({
 		where: and(
 			eq(assets.id, assetId),
-			eq(assets.organizationId, organizationId),
 			isNull(assets.deletedAt),
 		),
 	});
@@ -62,12 +82,23 @@ async function checkAssetPermission(
 		return false;
 	}
 
-	// Check if user is the uploader (has all permissions)
+	// Organization Manager - has full permissions to all assets within their organization
+	const isOrgManager = userRoles.includes("organization_manager") || userRoles.includes("admin");
+	if (isOrgManager && userOrgId === asset.organizationId) {
+		return true;
+	}
+
+	// For regular users, ensure asset belongs to their organization
+	if (userOrgId !== asset.organizationId) {
+		return false;
+	}
+
+	// Check if user is the uploader (has all permissions within their org)
 	if (asset.uploadedBy === userId) {
 		return true;
 	}
 
-	// Check explicit permissions
+	// Check explicit user-specific permissions
 	const userPermission = await ctx.db.query.assetPermissions.findFirst({
 		where: and(
 			eq(assetPermissions.assetId, assetId),
@@ -88,9 +119,51 @@ async function checkAssetPermission(
 		}
 	}
 
-	// Check role-based permissions (simplified - assumes user has roles)
-	// In a full implementation, you'd check user roles and role permissions
-	return permission === "view"; // Default: allow viewing for org members
+	// Check role-based permissions
+	if (userRoles.length > 0) {
+		// First get role IDs for the user's roles
+		const userRoleRecords = await ctx.db.query.roles.findMany({
+			where: inArray(roles.name, userRoles),
+			columns: { id: true },
+		});
+		
+		const roleIds = userRoleRecords.map(r => r.id);
+		
+		if (roleIds.length > 0) {
+			const rolePermission = await ctx.db.query.assetPermissions.findFirst({
+				where: and(
+					eq(assetPermissions.assetId, assetId),
+					inArray(assetPermissions.roleId, roleIds),
+				),
+			});
+
+			if (rolePermission) {
+				switch (permission) {
+					case "view":
+						return rolePermission.canView;
+					case "download":
+						return rolePermission.canDownload;
+					case "edit":
+						return rolePermission.canEdit;
+					case "delete":
+						return rolePermission.canDelete;
+				}
+			}
+		}
+	}
+
+	// Default permissions for regular organization members
+	// Allow view, download, and edit for all org members, but restrict delete
+	switch (permission) {
+		case "view":
+		case "download":
+		case "edit":
+			return true;
+		case "delete":
+			return false; // Only uploaders, explicit permissions, or managers can delete
+	}
+
+	return false;
 }
 
 const createAssetSchema = z.object({
@@ -150,12 +223,16 @@ export const assetRouter = createTRPCRouter({
 	// Get all assets
 	getAll: protectedProcedure.query(async ({ ctx }) => {
 		const organizationId = getOrganizationId(ctx);
+		const isSuperAdmin = ctx.session.user.isSuperAdmin || false;
+		
+		// Site admins can see assets from all organizations
+		const whereConditions = [isNull(assets.deletedAt)];
+		if (!isSuperAdmin && organizationId) {
+			whereConditions.push(eq(assets.organizationId, organizationId));
+		}
 		
 		const results = await ctx.db.query.assets.findMany({
-			where: and(
-				eq(assets.organizationId, organizationId),
-				isNull(assets.deletedAt),
-			),
+			where: and(...whereConditions),
 			limit: 50,
 			orderBy: [desc(assets.createdAt)],
 			with: {
@@ -167,6 +244,12 @@ export const assetRouter = createTRPCRouter({
 						image: true,
 					},
 				},
+				organization: isSuperAdmin ? {
+					columns: {
+						id: true,
+						name: true,
+					},
+				} : undefined,
 			},
 		});
 
@@ -240,9 +323,7 @@ export const assetRouter = createTRPCRouter({
 	getById: protectedProcedure
 		.input(z.object({ id: z.string().uuid() }))
 		.query(async ({ ctx, input }) => {
-			const organizationId = getOrganizationId(ctx);
-
-			// Check permissions
+			// Check permissions first - this handles all role-based access control
 			const hasPermission = await checkAssetPermission(ctx, input.id, "view");
 			if (!hasPermission) {
 				throw new TRPCError({
@@ -254,7 +335,6 @@ export const assetRouter = createTRPCRouter({
 			const asset = await ctx.db.query.assets.findFirst({
 				where: and(
 					eq(assets.id, input.id),
-					eq(assets.organizationId, organizationId),
 					isNull(assets.deletedAt),
 				),
 				with: {
@@ -295,12 +375,15 @@ export const assetRouter = createTRPCRouter({
 		.input(searchAssetsSchema)
 		.query(async ({ ctx, input }) => {
 			const organizationId = getOrganizationId(ctx);
+			const isSuperAdmin = ctx.session.user.isSuperAdmin || false;
 
 			// Build the where clause
-			const whereConditions = [
-				eq(assets.organizationId, organizationId),
-				isNull(assets.deletedAt),
-			];
+			const whereConditions = [isNull(assets.deletedAt)];
+			
+			// Site admins can search across all organizations
+			if (!isSuperAdmin && organizationId) {
+				whereConditions.push(eq(assets.organizationId, organizationId));
+			}
 
 			// Text search
 			if (input.query) {
@@ -355,6 +438,12 @@ export const assetRouter = createTRPCRouter({
 							image: true,
 						},
 					},
+					organization: isSuperAdmin ? {
+						columns: {
+							id: true,
+							name: true,
+						},
+					} : undefined,
 				},
 			});
 
@@ -369,9 +458,7 @@ export const assetRouter = createTRPCRouter({
 	update: protectedProcedure
 		.input(updateAssetSchema)
 		.mutation(async ({ ctx, input }) => {
-			const organizationId = getOrganizationId(ctx);
-
-			// Check permissions
+			// Check permissions first - this handles all role-based access control
 			const hasPermission = await checkAssetPermission(ctx, input.id, "edit");
 			if (!hasPermission) {
 				throw new TRPCError({
@@ -397,7 +484,6 @@ export const assetRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(assets.id, input.id),
-						eq(assets.organizationId, organizationId),
 						isNull(assets.deletedAt),
 					),
 				)
@@ -420,14 +506,28 @@ export const assetRouter = createTRPCRouter({
 	delete: protectedProcedure
 		.input(z.object({ id: z.string().uuid() }))
 		.mutation(async ({ ctx, input }) => {
-			const organizationId = getOrganizationId(ctx);
-
-			// Check permissions
+			// Check permissions first - this handles all role-based access control
 			const hasPermission = await checkAssetPermission(ctx, input.id, "delete");
 			if (!hasPermission) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "You don't have permission to delete this asset",
+				});
+			}
+
+			// Get the asset to find its organization for usage tracking
+			const asset = await ctx.db.query.assets.findFirst({
+				where: and(
+					eq(assets.id, input.id),
+					isNull(assets.deletedAt),
+				),
+				columns: { organizationId: true },
+			});
+
+			if (!asset) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Asset not found",
 				});
 			}
 
@@ -440,7 +540,6 @@ export const assetRouter = createTRPCRouter({
 				.where(
 					and(
 						eq(assets.id, input.id),
-						eq(assets.organizationId, organizationId),
 						isNull(assets.deletedAt),
 					),
 				)
@@ -454,7 +553,7 @@ export const assetRouter = createTRPCRouter({
 			}
 
 			// Update usage metrics to recalculate after deletion
-			await usageTracker.scheduleUsageUpdate(organizationId);
+			await usageTracker.scheduleUsageUpdate(asset.organizationId);
 
 			return {
 				success: true,
@@ -740,9 +839,7 @@ export const assetRouter = createTRPCRouter({
 	getThumbnailUrl: protectedProcedure
 		.input(z.object({ assetId: z.string().uuid() }))
 		.query(async ({ ctx, input }) => {
-			const organizationId = getOrganizationId(ctx);
-
-			// Check permissions
+			// Check permissions first - this handles all role-based access control
 			const hasPermission = await checkAssetPermission(ctx, input.assetId, "view");
 			if (!hasPermission) {
 				throw new TRPCError({
@@ -751,13 +848,13 @@ export const assetRouter = createTRPCRouter({
 				});
 			}
 
-			// Verify asset exists
+			// Verify asset exists and get its organization
 			const asset = await ctx.db.query.assets.findFirst({
 				where: and(
 					eq(assets.id, input.assetId),
-					eq(assets.organizationId, organizationId),
 					isNull(assets.deletedAt),
 				),
+				columns: { id: true, organizationId: true },
 			});
 
 			if (!asset) {
@@ -767,8 +864,8 @@ export const assetRouter = createTRPCRouter({
 				});
 			}
 
-			// Generate signed token
-			const token = generateThumbnailToken(input.assetId, organizationId);
+			// Generate signed token using the asset's organization ID
+			const token = generateThumbnailToken(input.assetId, asset.organizationId);
 			const signedUrl = `/api/assets/${input.assetId}/thumbnail?token=${encodeURIComponent(token)}`;
 
 			return {
