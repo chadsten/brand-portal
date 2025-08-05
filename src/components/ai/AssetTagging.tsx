@@ -485,7 +485,7 @@ export function AssetTagging({
 		if (!selectedAsset) return null;
 
 		return (
-			<dialog className={`modal ${isDetailModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isDetailModalOpen}>
 				<div className="modal-box w-11/12 max-w-4xl">
 					<div className="modal-header flex justify-between items-center mb-4">
 						<div className="flex items-center gap-3">
@@ -700,7 +700,7 @@ export function AssetTagging({
 	};
 
 	const renderSettingsModal = () => (
-		<dialog className={`modal ${isSettingsModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isSettingsModalOpen}>
 			<div className="modal-box w-11/12 max-w-2xl">
 				<div className="modal-header mb-4">
 					<h3 className="font-semibold text-lg">AI Tagging Settings</h3>
@@ -734,7 +734,7 @@ export function AssetTagging({
 
 						<div>
 							<h4 className="mb-4 font-semibold">Auto-Approval</h4>
-							<label className="label cursor-pointer justify-start gap-2">
+							<label className="cursor-pointer flex items-center justify-start gap-2">
 								<input
 									type="checkbox"
 									className="toggle toggle-primary"
@@ -746,7 +746,7 @@ export function AssetTagging({
 										})
 									}
 								/>
-								<span className="label-text">Automatically approve high-confidence tags</span>
+								<span>Automatically approve high-confidence tags</span>
 							</label>
 						</div>
 
@@ -884,7 +884,7 @@ export function AssetTagging({
 
 			{/* Main Content */}
 			<div className="w-full">
-				<div className="tabs tabs-boxed mb-4">
+				<div className="tabs tabs-box mb-4">
 					<button 
 						className={`tab ${selectedTab === 'queue' ? 'tab-active' : ''}`}
 						onClick={() => setSelectedTab('queue')}

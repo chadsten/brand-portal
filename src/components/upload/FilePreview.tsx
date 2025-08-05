@@ -179,7 +179,7 @@ function FilePreviewModal({
 	};
 
 	return (
-		<dialog className={`modal ${isOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isOpen}>
 			<div className="modal-box w-11/12 max-w-4xl h-5/6 overflow-y-auto">
 				<div className="flex justify-between items-start mb-4">
 					<div className="flex flex-col gap-1">

@@ -12,27 +12,34 @@ jest.mock('lucide-react', () => ({
   HardDrive: () => <div data-testid="harddrive-icon" />,
 }));
 
-// Mock @heroui/react components
-jest.mock('@heroui/react', () => ({
+// Mock DaisyUI components (no library imports needed as DaisyUI uses pure CSS classes)
+// These mocks simulate the expected HTML structure with DaisyUI classes
+const mockDaisyUIComponents = {
   Card: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
+    <div className={`card ${className || ''}`}>{children}</div>
   ),
-  CardBody: ({ children }: any) => <div>{children}</div>,
-  CardHeader: ({ children }: any) => <div>{children}</div>,
+  CardBody: ({ children }: any) => <div className="card-body">{children}</div>,
+  CardHeader: ({ children }: any) => <div className="card-header">{children}</div>,
   Button: ({ children, onPress, startContent, variant, size }: any) => (
-    <button onClick={onPress} data-variant={variant} data-size={size}>
+    <button 
+      className={`btn ${variant ? `btn-${variant}` : ''} ${size ? `btn-${size}` : ''}`}
+      onClick={onPress} 
+      data-variant={variant} 
+      data-size={size}
+    >
       {startContent}
       {children}
     </button>
   ),
   Select: ({ children, label, placeholder, onSelectionChange, selectedKeys }: any) => (
-    <div>
-      <label>{label}</label>
+    <div className="form-control">
+      {label && <label className="label"><span className="label-text">{label}</span></label>}
       <select 
+        className="select select-bordered"
         onChange={(e) => onSelectionChange && onSelectionChange(new Set([e.target.value]))}
         value={Array.from(selectedKeys || [])[0] || ''}
       >
-        <option value="">{placeholder}</option>
+        <option value="" disabled>{placeholder}</option>
         {children}
       </select>
     </div>
@@ -41,11 +48,12 @@ jest.mock('@heroui/react', () => ({
     <option value={key}>{children}</option>
   ),
   Input: ({ label, placeholder, value, onValueChange, startContent, type }: any) => (
-    <div>
-      {label && <label>{label}</label>}
-      <div>
+    <div className="form-control">
+      {label && <label className="label"><span className="label-text">{label}</span></label>}
+      <div className="input-group">
         {startContent}
         <input
+          className="input input-bordered"
           type={type || 'text'}
           placeholder={placeholder}
           value={value || ''}
@@ -55,17 +63,19 @@ jest.mock('@heroui/react', () => ({
     </div>
   ),
   DateRangePicker: ({ label, value, onChange, startContent }: any) => (
-    <div>
-      {label && <label>{label}</label>}
-      <div>
+    <div className="form-control">
+      {label && <label className="label"><span className="label-text">{label}</span></label>}
+      <div className="input-group">
         {startContent}
         <input
+          className="input input-bordered"
           type="date"
           data-testid="date-start"
           value={value?.start || ''}
           onChange={(e) => onChange && onChange({ ...value, start: e.target.value })}
         />
         <input
+          className="input input-bordered"
           type="date"
           data-testid="date-end"
           value={value?.end || ''}
@@ -75,55 +85,58 @@ jest.mock('@heroui/react', () => ({
     </div>
   ),
   Chip: ({ children, onClose, variant }: any) => (
-    <span data-variant={variant}>
+    <span className={`badge ${variant ? `badge-${variant}` : ''}`}>
       {children}
       {onClose && (
-        <button onClick={onClose} data-testid="chip-close">
+        <button className="btn btn-xs btn-circle" onClick={onClose} data-testid="chip-close">
           ×
         </button>
       )}
     </span>
   ),
   Badge: ({ children, content }: any) => (
-    <span>
+    <div className="indicator">
       {children}
-      {content && <span>{content}</span>}
-    </span>
+      {content && <span className="indicator-item badge badge-secondary">{content}</span>}
+    </div>
   ),
-  Accordion: ({ children }: any) => <div>{children}</div>,
+  Accordion: ({ children }: any) => <div className="collapse-group">{children}</div>,
   AccordionItem: ({ children, title, key }: any) => (
-    <div key={key}>
-      <div>{title}</div>
-      <div>{children}</div>
+    <div className="collapse collapse-arrow" key={key}>
+      <input type="checkbox" />
+      <div className="collapse-title">{title}</div>
+      <div className="collapse-content">{children}</div>
     </div>
   ),
   Checkbox: ({ children, isSelected, onValueChange }: any) => (
-    <label>
+    <label className="label cursor-pointer">
       <input
         type="checkbox"
+        className="checkbox"
         checked={isSelected}
         onChange={(e) => onValueChange && onValueChange(e.target.checked)}
       />
-      {children}
+      <span className="label-text">{children}</span>
     </label>
   ),
   CheckboxGroup: ({ children, value, onValueChange }: any) => (
-    <div data-value={value} onChange={onValueChange}>{children}</div>
+    <div className="form-control" data-value={value} onChange={onValueChange}>{children}</div>
   ),
   Radio: ({ children, value }: any) => (
-    <label>
-      <input type="radio" value={value} />
-      {children}
+    <label className="label cursor-pointer">
+      <input type="radio" className="radio" value={value} />
+      <span className="label-text">{children}</span>
     </label>
   ),
   RadioGroup: ({ children, value, onValueChange }: any) => (
-    <div data-value={value} onChange={onValueChange}>{children}</div>
+    <div className="form-control" data-value={value} onChange={onValueChange}>{children}</div>
   ),
   Slider: ({ label, value, onChange, min, max }: any) => (
-    <div>
-      {label && <label>{label}</label>}
+    <div className="form-control">
+      {label && <label className="label"><span className="label-text">{label}</span></label>}
       <input
         type="range"
+        className="range"
         min={min}
         max={max}
         value={value}
@@ -131,8 +144,28 @@ jest.mock('@heroui/react', () => ({
       />
     </div>
   ),
-  Spacer: () => <div className="spacer" />,
-}));
+  Spacer: () => <div className="divider" />,
+};
+
+// Make components available globally for the test
+global.Card = mockDaisyUIComponents.Card;
+global.CardBody = mockDaisyUIComponents.CardBody;
+global.CardHeader = mockDaisyUIComponents.CardHeader;
+global.Button = mockDaisyUIComponents.Button;
+global.Select = mockDaisyUIComponents.Select;
+global.SelectItem = mockDaisyUIComponents.SelectItem;
+global.Input = mockDaisyUIComponents.Input;
+global.DateRangePicker = mockDaisyUIComponents.DateRangePicker;
+global.Chip = mockDaisyUIComponents.Chip;
+global.Badge = mockDaisyUIComponents.Badge;
+global.Accordion = mockDaisyUIComponents.Accordion;
+global.AccordionItem = mockDaisyUIComponents.AccordionItem;
+global.Checkbox = mockDaisyUIComponents.Checkbox;
+global.CheckboxGroup = mockDaisyUIComponents.CheckboxGroup;
+global.Radio = mockDaisyUIComponents.Radio;
+global.RadioGroup = mockDaisyUIComponents.RadioGroup;
+global.Slider = mockDaisyUIComponents.Slider;
+global.Spacer = mockDaisyUIComponents.Spacer;
 
 describe('SearchFilters', () => {
   const mockFilterGroups = [

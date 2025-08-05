@@ -19,8 +19,9 @@ jest.mock('lucide-react', () => ({
   X: () => <div data-testid="close-icon" />,
 }));
 
-// Mock @heroui/react components and hooks
-jest.mock('@heroui/react', () => ({
+// Mock DaisyUI components (no library imports needed as DaisyUI uses pure CSS classes)
+// These mocks simulate the expected HTML structure with DaisyUI classes
+const mockDaisyUIComponents = {
   useDisclosure: () => ({
     isOpen: false,
     onOpen: jest.fn(),
@@ -28,54 +29,78 @@ jest.mock('@heroui/react', () => ({
     onOpenChange: jest.fn(),
   }),
   Navbar: ({ children, className }: any) => (
-    <nav className={className}>{children}</nav>
+    <nav className={`navbar ${className || ''}`}>{children}</nav>
   ),
-  NavbarBrand: ({ children }: any) => <div>{children}</div>,
+  NavbarBrand: ({ children }: any) => <div className="navbar-start">{children}</div>,
   NavbarContent: ({ children, justify }: any) => (
-    <div data-justify={justify}>{children}</div>
+    <div className={`navbar-${justify === 'end' ? 'end' : 'center'}`}>{children}</div>
   ),
-  NavbarItem: ({ children }: any) => <div>{children}</div>,
+  NavbarItem: ({ children }: any) => <div className="navbar-item">{children}</div>,
   NavbarMenuToggle: ({ children, isOpen, onPress }: any) => (
-    <button onClick={onPress} data-open={isOpen}>
+    <button className="btn btn-square btn-ghost" onClick={onPress} data-open={isOpen}>
       {children}
     </button>
   ),
   NavbarMenu: ({ children, isOpen }: any) => (
-    <div data-open={isOpen}>{children}</div>
+    <div className={`menu ${isOpen ? 'menu-open' : ''}`} data-open={isOpen}>{children}</div>
   ),
-  NavbarMenuItem: ({ children }: any) => <div>{children}</div>,
+  NavbarMenuItem: ({ children }: any) => <div className="menu-item">{children}</div>,
   Button: ({ children, onPress, startContent, variant, className }: any) => (
-    <button onClick={onPress} className={className} data-variant={variant}>
+    <button 
+      className={`btn ${variant ? `btn-${variant}` : ''} ${className || ''}`} 
+      onClick={onPress} 
+      data-variant={variant}
+    >
       {startContent}
       {children}
     </button>
   ),
   Link: ({ children, href, className }: any) => (
-    <a href={href} className={className}>
+    <a href={href} className={`link ${className || ''}`}>
       {children}
     </a>
   ),
   Badge: ({ children, content, color }: any) => (
-    <div data-color={color}>
+    <div className={`indicator ${color ? `badge-${color}` : ''}`}>
       {children}
-      {content && <span data-testid="badge-content">{content}</span>}
+      {content && <span className="indicator-item badge badge-secondary" data-testid="badge-content">{content}</span>}
     </div>
   ),
   Avatar: ({ src, name, size }: any) => (
-    <div data-size={size}>
-      <img src={src} alt={name} />
+    <div className={`avatar ${size ? `avatar-${size}` : ''}`}>
+      <div className="w-8 rounded-full">
+        <img src={src} alt={name} />
+      </div>
     </div>
   ),
-  Dropdown: ({ children }: any) => <div>{children}</div>,
-  DropdownTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenu: ({ children }: any) => <div role="menu">{children}</div>,
+  Dropdown: ({ children }: any) => <div className="dropdown">{children}</div>,
+  DropdownTrigger: ({ children }: any) => <div className="dropdown-trigger">{children}</div>,
+  DropdownMenu: ({ children }: any) => <div className="dropdown-content menu" role="menu">{children}</div>,
   DropdownItem: ({ children, onPress, startContent }: any) => (
-    <div role="menuitem" onClick={onPress}>
+    <li><a role="menuitem" onClick={onPress}>
       {startContent}
       {children}
-    </div>
+    </a></li>
   ),
-}));
+};
+
+// Make components available globally for the test
+global.useDisclosure = mockDaisyUIComponents.useDisclosure;
+global.Navbar = mockDaisyUIComponents.Navbar;
+global.NavbarBrand = mockDaisyUIComponents.NavbarBrand;
+global.NavbarContent = mockDaisyUIComponents.NavbarContent;
+global.NavbarItem = mockDaisyUIComponents.NavbarItem;
+global.NavbarMenuToggle = mockDaisyUIComponents.NavbarMenuToggle;
+global.NavbarMenu = mockDaisyUIComponents.NavbarMenu;
+global.NavbarMenuItem = mockDaisyUIComponents.NavbarMenuItem;
+global.Button = mockDaisyUIComponents.Button;
+global.Link = mockDaisyUIComponents.Link;
+global.Badge = mockDaisyUIComponents.Badge;
+global.Avatar = mockDaisyUIComponents.Avatar;
+global.Dropdown = mockDaisyUIComponents.Dropdown;
+global.DropdownTrigger = mockDaisyUIComponents.DropdownTrigger;
+global.DropdownMenu = mockDaisyUIComponents.DropdownMenu;
+global.DropdownItem = mockDaisyUIComponents.DropdownItem;
 
 // Mock Next.js Link
 jest.mock('next/link', () => {

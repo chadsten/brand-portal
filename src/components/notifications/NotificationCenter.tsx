@@ -619,7 +619,7 @@ export function NotificationCenter({
 		if (!selectedNotification) return null;
 
 		return (
-			<dialog className={`modal ${isDetailModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isDetailModalOpen}>
 				<div className="modal-box max-w-2xl">
 					<div className="flex items-center gap-3 mb-6">
 						<div className="rounded-lg bg-primary/10 p-2">
@@ -742,7 +742,7 @@ export function NotificationCenter({
 	};
 
 	const renderSettingsModal = () => (
-		<dialog className={`modal ${isSettingsModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isSettingsModalOpen}>
 			<div className="modal-box max-w-2xl">
 				<h3 className="font-semibold text-lg mb-6">Notification Settings</h3>
 					<div className="space-y-6">
@@ -961,7 +961,7 @@ export function NotificationCenter({
 														},
 													})
 												}
-												className="input input-bordered"
+												className="input"
 											/>
 										</div>
 										<div className="form-control">
@@ -980,7 +980,7 @@ export function NotificationCenter({
 														},
 													})
 												}
-												className="input input-bordered"
+												className="input"
 											/>
 										</div>
 									</div>
@@ -1051,16 +1051,17 @@ export function NotificationCenter({
 								placeholder="Search notifications..."
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								className="input input-sm input-bordered w-full pl-10"
+								className="input input-sm w-full pl-10"
 							/>
 							<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 						</div>
-						<div className="form-control md:w-40">
-							<label className="label">
+						<div className="md:w-40">
+							<label className="label" htmlFor="filter-type">
 								<span className="label-text">Type</span>
 							</label>
 							<select 
-								className="select select-sm select-bordered w-full"
+								id="filter-type"
+								className="select select-sm w-full"
 								value={filterType}
 								onChange={(e) => setFilterType(e.target.value)}
 							>
@@ -1071,12 +1072,13 @@ export function NotificationCenter({
 								<option value="error">Error</option>
 							</select>
 						</div>
-						<div className="form-control md:w-40">
-							<label className="label">
+						<div className="md:w-40">
+							<label className="label" htmlFor="filter-category">
 								<span className="label-text">Category</span>
 							</label>
 							<select 
-								className="select select-sm select-bordered w-full"
+								id="filter-category"
+								className="select select-sm w-full"
 								value={filterCategory}
 								onChange={(e) => setFilterCategory(e.target.value)}
 							>

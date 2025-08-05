@@ -286,7 +286,7 @@ export function RealTimeCollaboration() {
 				{/* Sidebar */}
 				<div className="w-96 bg-base-100 border-l border-base-300 flex flex-col">
 					{/* Tabs */}
-					<div className="tabs tabs-boxed m-4">
+					<div className="tabs tabs-box m-4">
 						<button
 							className={`tab ${activeTab === "chat" ? "tab-active" : ""}`}
 							onClick={() => setActiveTab("chat")}
@@ -351,7 +351,7 @@ export function RealTimeCollaboration() {
 									<div className="flex gap-2">
 										<input
 											type="text"
-											className="input input-bordered flex-1"
+											className="input flex-1"
 											placeholder="Type a message..."
 											value={newMessage}
 											onChange={(e) => setNewMessage(e.target.value)}

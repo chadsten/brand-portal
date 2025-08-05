@@ -1,10 +1,207 @@
 @import "tailwindcss";
+
+/* DaisyUI v5 Plugin Configuration */
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark;
 }
 
-@theme {
-	--font-sans:
-		var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+/* ===================================================================
+   ULTIMATE CURSOR:POINTER SOLUTION - BULLETPROOF IMPLEMENTATION
+   
+   This solution uses multiple layers of defense to ensure cursor:pointer
+   works in all scenarios, regardless of CSS conflicts or specificity issues.
+   
+   Layers of Defense:
+   1. CSS Custom Properties for performance
+   2. Maximum specificity selectors that override everything
+   3. Comprehensive coverage of all interactive patterns
+   4. !important only where absolutely necessary
+   5. JavaScript fallback (see useCursorFix hook)
+   =================================================================== */
+
+/* CSS Custom Properties - Better performance than repeated values */
+:root {
+  --cursor-pointer: pointer;
+  --cursor-not-allowed: not-allowed;
+  --cursor-default: default;
+  --cursor-grab: grab;
+  --cursor-grabbing: grabbing;
+}
+
+/* ===================================================================
+   LEVEL 1: MAXIMUM SPECIFICITY SELECTORS
+   These selectors have the highest possible specificity without !important
+   =================================================================== */
+
+/* DaisyUI Buttons - Maximum specificity override */
+html body .btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body button.btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body input[type="button"].btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body input[type="submit"].btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body input[type="reset"].btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* Native HTML Buttons - Maximum specificity */
+html body button:not(:disabled):not([disabled]):not([aria-disabled="true"]):not(.btn-disabled),
+html body input[type="button"]:not(:disabled):not([disabled]):not([aria-disabled="true"]):not(.btn-disabled),
+html body input[type="submit"]:not(:disabled):not([disabled]):not([aria-disabled="true"]):not(.btn-disabled),
+html body input[type="reset"]:not(:disabled):not([disabled]):not([aria-disabled="true"]):not(.btn-disabled) {
+  cursor: var(--cursor-pointer);
+}
+
+/* Links and Interactive Elements */
+html body a[href]:not([aria-disabled="true"]),
+html body a[role="button"]:not([aria-disabled="true"]),
+html body [role="button"]:not([aria-disabled="true"]):not(:disabled):not([disabled]),
+html body [tabindex]:not([tabindex="-1"]):not([aria-disabled="true"]):not(:disabled):not([disabled]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* DaisyUI Interactive Components - Maximum specificity */
+html body .tab:not(.tab-disabled):not([disabled]):not([aria-disabled="true"]),
+html body .menu li > *:not([disabled]):not([aria-disabled="true"]):not(.menu-disabled),
+html body .dropdown-content li:not([aria-disabled="true"]),
+html body .modal-action .btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body .card.cursor-pointer:not([aria-disabled="true"]),
+html body .card[role="button"]:not([aria-disabled="true"]),
+html body .card[tabindex]:not([tabindex="-1"]):not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* Form Controls */
+html body input[type="checkbox"]:not(:disabled):not([disabled]):not([aria-disabled="true"]),
+html body input[type="radio"]:not(:disabled):not([disabled]):not([aria-disabled="true"]),
+html body select:not(:disabled):not([disabled]):not([aria-disabled="true"]),
+html body .select:not(:disabled):not([disabled]):not([aria-disabled="true"]) > select,
+html body .range:not(:disabled):not([disabled]):not([aria-disabled="true"]),
+html body .toggle:not(:disabled):not([disabled]):not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* ===================================================================
+   LEVEL 2: UTILITY CLASSES WITH MAXIMUM SPECIFICITY
+   These can be applied manually when needed
+   =================================================================== */
+
+/* Primary cursor utility - works everywhere */
+html body .cursor-pointer-force:not([aria-disabled="true"]),
+html body .force-pointer:not([aria-disabled="true"]),
+html body [data-cursor="pointer"]:not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* Tailwind cursor-pointer override */
+html body .cursor-pointer:not(:disabled):not([disabled]):not([aria-disabled="true"]):not(.cursor-not-allowed) {
+  cursor: var(--cursor-pointer);
+}
+
+/* ===================================================================
+   LEVEL 3: DISABLED STATES - USE !IMPORTANT FOR SAFETY
+   Disabled elements should never show pointer cursor
+   =================================================================== */
+
+/* Disabled buttons and inputs */
+html body button:disabled,
+html body button.btn-disabled,
+html body button[disabled],
+html body button[aria-disabled="true"],
+html body .btn:disabled,
+html body .btn.btn-disabled,
+html body .btn[disabled],
+html body .btn[aria-disabled="true"],
+html body input:disabled,
+html body input[disabled],
+html body input[aria-disabled="true"],
+html body select:disabled,
+html body select[disabled],
+html body select[aria-disabled="true"],
+html body [aria-disabled="true"] {
+  cursor: var(--cursor-not-allowed) !important;
+}
+
+/* ===================================================================
+   LEVEL 4: DRAG AND DROP SUPPORT
+   =================================================================== */
+
+html body [draggable="true"]:not([aria-disabled="true"]) {
+  cursor: var(--cursor-grab);
+}
+
+html body [draggable="true"]:active:not([aria-disabled="true"]) {
+  cursor: var(--cursor-grabbing);
+}
+
+/* ===================================================================
+   LEVEL 5: COMPREHENSIVE DAISYUI COMPONENT COVERAGE
+   =================================================================== */
+
+/* Navigation Components */
+html body .navbar .btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body .breadcrumbs a:not([aria-disabled="true"]),
+html body .steps .step:not([aria-disabled="true"]),
+html body .pagination .btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* Interactive Cards and Content */
+html body .card:hover:not([aria-disabled="true"]),
+html body .card[onclick]:not([aria-disabled="true"]),
+html body .card.card-sm:not([aria-disabled="true"]),
+html body .carousel-item:not([aria-disabled="true"]),
+html body .collapse-title:not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* Modal and Dialog Controls */
+html body .modal-backdrop,
+html body .modal .btn:not(:disabled):not(.btn-disabled):not([disabled]):not([aria-disabled="true"]),
+html body .drawer-toggle:not(:disabled):not([disabled]):not([aria-disabled="true"]),
+html body .drawer-overlay {
+  cursor: var(--cursor-pointer);
+}
+
+/* Data Display Interactive Elements */
+html body .stat:hover:not([aria-disabled="true"]),
+html body .badge.badge-outline:not([aria-disabled="true"]),
+html body .kbd:not([aria-disabled="true"]),
+html body .timeline-start:not([aria-disabled="true"]),
+html body .timeline-end:not([aria-disabled="true"]) {
+  cursor: var(--cursor-pointer);
+}
+
+/* ===================================================================
+   LEVEL 6: EMERGENCY OVERRIDE UTILITIES
+   Use these classes when nothing else works
+   =================================================================== */
+
+/* Nuclear option - maximum specificity with !important */
+html body .cursor-pointer-important,
+html body .force-cursor-pointer {
+  cursor: var(--cursor-pointer) !important;
+}
+
+/* Reset cursor utility */
+html body .cursor-auto-important,
+html body .reset-cursor {
+  cursor: auto !important;
+}
+
+/* ===================================================================
+   LEVEL 7: PERFORMANCE OPTIMIZATIONS
+   =================================================================== */
+
+/* Prevent cursor changes during animations for better performance */
+html body *:has(> .loading),
+html body .loading,
+html body .skeleton {
+  cursor: default;
+}
+
+/* Optimize repaints by containing cursor changes */
+html body .btn,
+html body .card,
+html body .menu,
+html body .modal {
+  contain: style;
 }

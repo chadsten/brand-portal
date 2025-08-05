@@ -1,7 +1,5 @@
 "use client";
 
-// Import removed - using native HTML and DaisyUI classes
-import { useModal } from "~/hooks/useModal";
 import {
 	Filter,
 	Grid,
@@ -9,33 +7,38 @@ import {
 	List,
 	Plus,
 	Rows3,
-	Search,
 	SortAsc,
 	SortDesc,
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import { useUrlFilters } from "~/hooks/useUrlFilters";
+import { SidebarLayout } from "~/components/layout/SidebarLayout";
 import { CollectionCreateModal } from "./CollectionCreateModal";
 import { CollectionDetailModal } from "./CollectionDetailModal";
-import { CollectionFilters } from "./CollectionFilters";
+import { CollectionFiltersSidebar } from "./CollectionFiltersSidebar";
 import { CollectionGrid } from "./CollectionGrid";
 import { CollectionList } from "./CollectionList";
+import { useModal } from "~/hooks/useModal";
+import { Pagination } from "~/components/ui";
+import type { DateRange } from "~/components/filters";
 
-export interface CollectionFiltersState {
-	query: string;
-	category: string;
+export interface CollectionFilters {
+	query?: string;
+	category?: string;
 	isPublic?: boolean;
 	isTemplate?: boolean;
-	tags: string[];
+	tags?: string[];
 	createdBy?: string;
-	dateRange?: {
-		from: Date;
-		to: Date;
-	};
+	dateRange?: DateRange;
 	assetCountRange?: {
 		min: number;
 		max: number;
 	};
+	page?: number;
+	pageSize?: number;
+	sortField?: string;
+	sortOrder?: "asc" | "desc";
 }
 
 const SORT_OPTIONS = [
@@ -51,15 +54,48 @@ export function CollectionBrowser() {
 	const [selectedCollection, setSelectedCollection] = useState<string | null>(
 		null,
 	);
-	const [sortField, setSortField] = useState<string>("createdAt");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-	const [currentPage, setCurrentPage] = useState(1);
-	const [showFilters, setShowFilters] = useState(false);
-	const [filters, setFilters] = useState<CollectionFiltersState>({
-		query: "",
-		category: "",
-		tags: [],
+
+	// URL-synced filters and pagination
+	const { filters, updateFilters, clearFilters, activeFilterCount } = useUrlFilters<CollectionFilters>({
+		defaultFilters: {
+			page: 1,
+			pageSize: 25,
+			sortField: "createdAt",
+			sortOrder: "desc",
+		},
+		serializers: {
+			dateRange: {
+				serialize: (value) => JSON.stringify(value),
+				deserialize: (value) => {
+					try {
+						const parsed = JSON.parse(value);
+						return {
+							from: parsed.from ? new Date(parsed.from) : undefined,
+							to: parsed.to ? new Date(parsed.to) : undefined,
+						};
+					} catch {
+						return undefined;
+					}
+				},
+			},
+			assetCountRange: {
+				serialize: (value) => JSON.stringify(value),
+				deserialize: (value) => {
+					try {
+						return JSON.parse(value);
+					} catch {
+						return undefined;
+					}
+				},
+			},
+		},
 	});
+
+	// Extract pagination and sorting from URL state
+	const currentPage = filters.page || 1;
+	const pageSize = filters.pageSize || 25;
+	const sortField = filters.sortField || "createdAt";
+	const sortOrder = filters.sortOrder || "desc";
 
 	// Modal controls
 	const {
@@ -72,9 +108,6 @@ export function CollectionBrowser() {
 		onOpen: onDetailOpen,
 		onClose: onDetailClose,
 	} = useModal();
-
-	const itemsPerPage = 20;
-	const offset = (currentPage - 1) * itemsPerPage;
 
 	// API queries
 	const {
@@ -89,21 +122,20 @@ export function CollectionBrowser() {
 		createdBy: filters.createdBy,
 		sortBy: sortField as any,
 		sortOrder,
-		limit: itemsPerPage,
-		offset,
+		page: currentPage,
+		pageSize: pageSize,
 	}) || {
-		data: { collections: [], total: 0 },
+		data: { collections: [], total: 0, totalPages: 0, currentPage: 1, pageSize: 25 },
 		isLoading: false,
 		refetch: () => {},
 	};
 
 	const collections = collectionsData?.collections || [];
 	const totalItems = collectionsData?.total || 0;
-	const totalPages = Math.ceil(totalItems / itemsPerPage);
+	const totalPages = collectionsData?.totalPages || 0;
 
-	const handleFilterChange = (newFilters: Partial<CollectionFiltersState>) => {
-		setFilters((prev) => ({ ...prev, ...newFilters }));
-		setCurrentPage(1);
+	const handleFilterChange = (newFilters: Partial<CollectionFilters>) => {
+		updateFilters({ ...newFilters, page: 1 });
 	};
 
 	const handleCollectionSelect = (collectionId: string) => {
@@ -113,34 +145,40 @@ export function CollectionBrowser() {
 
 	const handleSort = (field: string) => {
 		if (sortField === field) {
-			setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+			updateFilters({ sortOrder: sortOrder === "asc" ? "desc" : "asc", page: 1 });
 		} else {
-			setSortField(field);
-			setSortOrder("desc");
+			updateFilters({ sortField: field, sortOrder: "desc", page: 1 });
 		}
-		setCurrentPage(1);
 	};
 
 	const toggleSortOrder = () => {
-		setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-		setCurrentPage(1);
+		updateFilters({ sortOrder: sortOrder === "asc" ? "desc" : "asc", page: 1 });
 	};
 
-	const clearFilters = () => {
-		setFilters({
-			query: "",
-			category: "",
-			tags: [],
-		});
-		setCurrentPage(1);
+	const handleClearFilters = () => {
+		clearFilters();
 	};
 
-	const activeFilterCount = Object.values(filters).filter((value) => {
-		if (Array.isArray(value)) return value.length > 0;
-		return value !== "" && value !== undefined && value !== null;
-	}).length;
+	const handlePageChange = (page: number) => {
+		updateFilters({ page });
+	};
 
-	return (
+	const handlePageSizeChange = (newPageSize: number) => {
+		updateFilters({ pageSize: newPageSize, page: 1 });
+	};
+
+
+	// Create sidebar content
+	const sidebarContent = (
+		<CollectionFiltersSidebar
+			filters={filters}
+			onChange={handleFilterChange}
+			onClearAll={handleClearFilters}
+		/>
+	);
+
+	// Create main content
+	const mainContent = (
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -159,136 +197,50 @@ export function CollectionBrowser() {
 				</button>
 			</div>
 
-			{/* Search and Controls */}
-			<div className="card bg-base-100 shadow">
-				<div className="card-body gap-4">
-					<div className="flex flex-col gap-4 md:flex-row md:items-center">
-						<div className="relative flex-1">
-							<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
-							<input
-								className="input input-bordered w-full pl-10 h-10"
-								placeholder="Search collections..."
-								value={filters.query}
-								onChange={(e) => handleFilterChange({ query: e.target.value })}
-							/>
-						</div>
-						<div className="flex items-center gap-2">
-							<button
-								className={`btn gap-2 ${
-									showFilters ? "btn-primary" : "btn-outline"
-								}`}
-								onClick={() => setShowFilters(!showFilters)}
-							>
-								<Filter size={16} />
-								Filters
-								{activeFilterCount > 0 && (
-									<span className="badge badge-primary badge-sm">
-										{activeFilterCount}
-									</span>
-								)}
-							</button>
-							<select
-								aria-label="Sort by"
-								className="select select-bordered w-40"
-								value={sortField}
-								onChange={(e) => handleSort(e.target.value)}
-							>
-								<option disabled value="">Sort by</option>
-								{SORT_OPTIONS.map((option) => (
-									<option key={option.key} value={option.key}>{option.label}</option>
-								))}
-							</select>
-							<button
-								className="btn btn-square btn-outline"
-								onClick={toggleSortOrder}
-								aria-label={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
-							>
-								{sortOrder === "asc" ? (
-									<SortAsc size={16} />
-								) : (
-									<SortDesc size={16} />
-								)}
-							</button>
-							<div className="join">
-								<button
-									className={`btn btn-sm join-item ${
-										viewMode === "grid" ? "btn-primary" : "btn-outline"
-									}`}
-									onClick={() => setViewMode("grid")}
-								>
-									<Grid3X3 size={16} />
-								</button>
-								<button
-									className={`btn btn-sm join-item ${
-										viewMode === "list" ? "btn-primary" : "btn-outline"
-									}`}
-									onClick={() => setViewMode("list")}
-								>
-									<Rows3 size={16} />
-								</button>
-							</div>
-						</div>
-					</div>
+			{/* Controls */}
+			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+				<div className="flex items-center gap-2">
+					<select
+						aria-label="Sort by"
+						className="select"
+						value={sortField}
+						onChange={(e) => handleSort(e.target.value)}
+					>
+						<option disabled value="">Sort by</option>
+						{SORT_OPTIONS.map((option) => (
+							<option key={option.key} value={option.key}>{option.label}</option>
+						))}
+					</select>
+					<button
+						className="btn btn-square btn-outline"
+						onClick={toggleSortOrder}
+						aria-label={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
+					>
+						{sortOrder === "asc" ? (
+							<SortAsc size={16} />
+						) : (
+							<SortDesc size={16} />
+						)}
+					</button>
+				</div>
 
-					{/* Automatic Sub-Filters */}
-					{activeFilterCount > 0 && (
-						<div className="flex flex-wrap items-center gap-2">
-							<span className="text-base-content/70 text-sm">
-								Automatic sub-filters:
-							</span>
-							{filters.query && (
-								<span className="badge badge-outline gap-2">
-									Query: {filters.query}
-									<button 
-										className="btn btn-xs btn-ghost"
-										onClick={() => handleFilterChange({ query: "" })}
-									>
-										×
-									</button>
-								</span>
-							)}
-							{filters.category && (
-								<span className="badge badge-outline gap-2">
-									Category: {filters.category}
-									<button 
-										className="btn btn-xs btn-ghost"
-										onClick={() => handleFilterChange({ category: "" })}
-									>
-										×
-									</button>
-								</span>
-							)}
-							{filters.tags.map((tag) => (
-								<span key={tag} className="badge badge-outline gap-2">
-									Tag: {tag}
-									<button 
-										className="btn btn-xs btn-ghost"
-										onClick={() =>
-											handleFilterChange({
-												tags: filters.tags.filter((t) => t !== tag),
-											})
-										}
-									>
-										×
-									</button>
-								</span>
-							))}
-							<button className="btn btn-sm btn-ghost" onClick={clearFilters}>
-								Clear all
-							</button>
-						</div>
-					)}
-
-					{/* Filters Panel */}
-					{showFilters && (
-						<>
-							<div className="divider"></div>
-							<CollectionFilters
-								filters={filters}
-								onFiltersChange={handleFilterChange}
-							/>
-						</>
-					)}
+				<div className="join">
+					<button
+						className={`btn btn-sm join-item ${
+							viewMode === "grid" ? "btn-primary" : "btn-outline"
+						}`}
+						onClick={() => setViewMode("grid")}
+					>
+						<Grid3X3 size={16} />
+					</button>
+					<button
+						className={`btn btn-sm join-item ${
+							viewMode === "list" ? "btn-primary" : "btn-outline"
+						}`}
+						onClick={() => setViewMode("list")}
+					>
+						<Rows3 size={16} />
+					</button>
 				</div>
 			</div>
 
@@ -326,7 +278,7 @@ export function CollectionBrowser() {
 								: "Get started by creating your first collection"}
 						</p>
 						{activeFilterCount > 0 ? (
-							<button className="btn btn-outline" onClick={clearFilters}>
+							<button className="btn btn-outline" onClick={handleClearFilters}>
 								Clear filters
 							</button>
 						) : (
@@ -350,27 +302,17 @@ export function CollectionBrowser() {
 
 			{/* Pagination */}
 			{totalPages > 1 && (
-				<div className="flex justify-center">
-					<div className="join">
-						<button 
-							className="join-item btn" 
-							disabled={currentPage === 1}
-							onClick={() => setCurrentPage(currentPage - 1)}
-						>
-							«
-						</button>
-						<button className="join-item btn btn-active">
-							Page {currentPage} of {totalPages}
-						</button>
-						<button 
-							className="join-item btn" 
-							disabled={currentPage === totalPages}
-							onClick={() => setCurrentPage(currentPage + 1)}
-						>
-							»
-						</button>
-					</div>
-				</div>
+				<Pagination
+					currentPage={currentPage}
+					totalPages={totalPages}
+					pageSize={pageSize}
+					total={totalItems}
+					onPageChange={handlePageChange}
+					onPageSizeChange={handlePageSizeChange}
+					showPageSizeSelector={true}
+					pageSizeOptions={[25, 50, 100]}
+					disabled={isLoading}
+				/>
 			)}
 
 			{/* Modals */}
@@ -395,5 +337,15 @@ export function CollectionBrowser() {
 				/>
 			)}
 		</div>
+	);
+
+	return (
+		<SidebarLayout
+			sidebar={sidebarContent}
+			activeFilterCount={activeFilterCount}
+			filterTitle="Collection Filters"
+		>
+			{mainContent}
+		</SidebarLayout>
 	);
 }

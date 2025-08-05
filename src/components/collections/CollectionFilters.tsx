@@ -103,7 +103,7 @@ export function CollectionFilters({
 			<div className="space-y-2">
 				<label className="font-medium text-sm">Category</label>
 				<select
-					className="select select-bordered"
+					className="select"
 					value={filters.category || ""}
 					onChange={(e) => onFiltersChange({ category: e.target.value })}
 				>
@@ -118,7 +118,7 @@ export function CollectionFilters({
 			<div className="space-y-2">
 				<label className="font-medium text-sm">Created By</label>
 				<select
-					className="select select-bordered"
+					className="select"
 					value={filters.createdBy || ""}
 					onChange={(e) => onFiltersChange({ createdBy: e.target.value || undefined })}
 				>
@@ -223,11 +223,11 @@ export function CollectionFilters({
 				<div className="space-y-2">
 					<div>
 						<label className="label">
-							<span className="label-text text-sm">From</span>
+							<span className="text-sm">From</span>
 						</label>
 						<input
 							type="date"
-							className="input input-bordered input-sm w-full"
+							className="input input-sm w-full"
 							value={
 								filters.dateRange?.from
 									? filters.dateRange.from.toISOString().split("T")[0]
@@ -241,11 +241,11 @@ export function CollectionFilters({
 					</div>
 					<div>
 						<label className="label">
-							<span className="label-text text-sm">To</span>
+							<span className="text-sm">To</span>
 						</label>
 						<input
 							type="date"
-							className="input input-bordered input-sm w-full"
+							className="input input-sm w-full"
 							value={
 								filters.dateRange?.to
 									? filters.dateRange.to.toISOString().split("T")[0]

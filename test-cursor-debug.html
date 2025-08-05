@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Pointer Debug Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5.0.46/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        /* Copy of your globals.css cursor styles */
+        @layer utilities {
+          .btn:not(:disabled):not(.btn-disabled) {
+            cursor: pointer !important;
+          }
+          
+          .btn:disabled,
+          .btn.btn-disabled {
+            cursor: not-allowed !important;
+          }
+          
+          button:not(:disabled) {
+            cursor: pointer !important;
+          }
+          
+          button:disabled {
+            cursor: not-allowed !important;
+          }
+          
+          input[type="button"]:not(:disabled),
+          input[type="submit"]:not(:disabled),
+          input[type="reset"]:not(:disabled) {
+            cursor: pointer !important;
+          }
+          
+          input[type="button"]:disabled,
+          input[type="submit"]:disabled,
+          input[type="reset"]:disabled {
+            cursor: not-allowed !important;
+          }
+          
+          a[role="button"] {
+            cursor: pointer !important;
+          }
+          
+          .tab:not(.tab-disabled) {
+            cursor: pointer !important;
+          }
+          
+          .tab.tab-disabled {
+            cursor: not-allowed !important;
+          }
+          
+          .dropdown > *[tabindex] {
+            cursor: pointer !important;
+          }
+          
+          .cursor-pointer {
+            cursor: pointer !important;
+          }
+          
+          .card[onclick],
+          .card.cursor-pointer {
+            cursor: pointer !important;
+          }
+          
+          .menu li > *,
+          a[onclick]:not([href]) {
+            cursor: pointer !important;
+          }
+        }
+
+        /* Additional test styles */
+        .test-section {
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <h1 class="text-3xl font-bold mb-6">Cursor Pointer Debug Test</h1>
+    
+    <div class="debug-info">
+        <strong>Instructions:</strong> Hover over each element below and check if the cursor changes to a pointer. 
+        Open DevTools and inspect each element to see computed cursor styles.
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">DaisyUI Button Tests</h2>
+        <div class="space-x-2 space-y-2">
+            <button class="btn">Default Button</button>
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-secondary">Secondary Button</button>
+            <button class="btn" disabled>Disabled Button</button>
+            <button class="btn btn-disabled">DaisyUI Disabled</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">HTML Button Tests</h2>
+        <div class="space-x-2 space-y-2">
+            <button>Plain HTML Button</button>
+            <button disabled>Disabled HTML Button</button>
+            <input type="button" value="Input Button" />
+            <input type="submit" value="Submit Button" />
+            <input type="button" value="Disabled Input" disabled />
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Link and Role Tests</h2>
+        <div class="space-x-2 space-y-2">
+            <a href="#" class="btn">Link with btn class</a>
+            <a role="button" class="inline-block p-2 bg-blue-500 text-white rounded">Link with button role</a>
+            <a onclick="alert('clicked')" class="inline-block p-2 bg-green-500 text-white rounded">Link with onclick</a>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Tab Tests</h2>
+        <div class="tabs tabs-boxed">
+            <a class="tab">Tab 1</a>
+            <a class="tab tab-active">Active Tab</a>
+            <a class="tab tab-disabled">Disabled Tab</a>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Card Tests</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card bg-base-100 shadow-xl cursor-pointer">
+                <div class="card-body">
+                    <h3 class="card-title">Clickable Card</h3>
+                    <p>This card has cursor-pointer class</p>
+                </div>
+            </div>
+            <div class="card bg-base-100 shadow-xl" onclick="alert('clicked')">
+                <div class="card-body">
+                    <h3 class="card-title">Card with onclick</h3>
+                    <p>This card has onclick handler</p>
+                </div>
+            </div>
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title">Regular Card</h3>
+                    <p>This card should have default cursor</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Menu Tests</h2>
+        <ul class="menu bg-base-200 w-56 rounded-box">
+            <li><a>Menu Item 1</a></li>
+            <li><a>Menu Item 2</a></li>
+            <li class="disabled"><a>Disabled Item</a></li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Dropdown Tests</h2>
+        <div class="dropdown">
+            <div tabindex="0" role="button" class="btn m-1">Click for Dropdown</div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+                <li><a>Item 1</a></li>
+                <li><a>Item 2</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2 class="text-xl font-semibold mb-4">Manual Cursor Classes</h2>
+        <div class="space-x-2 space-y-2">
+            <div class="inline-block p-2 bg-purple-500 text-white rounded cursor-pointer">
+                Element with cursor-pointer class
+            </div>
+            <div class="inline-block p-2 bg-red-500 text-white rounded" style="cursor: pointer;">
+                Element with inline cursor style
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add click handlers for testing
+        document.querySelectorAll('.card[onclick], .card.cursor-pointer').forEach(card => {
+            if (!card.hasAttribute('onclick')) {
+                card.addEventListener('click', () => {
+                    console.log('Card clicked:', card);
+                    alert('Card clicked!');
+                });
+            }
+        });
+        
+        // Debug function to check computed styles
+        function debugCursor(element) {
+            const computedStyle = window.getComputedStyle(element);
+            console.log('Element:', element);
+            console.log('Computed cursor:', computedStyle.cursor);
+            console.log('Classes:', element.className);
+            console.log('---');
+        }
+        
+        // Log all button cursor styles
+        console.log('=== CURSOR DEBUG INFO ===');
+        document.querySelectorAll('button, .btn, .card, .tab, a[role="button"]').forEach(debugCursor);
+        
+        // Add visual indicator for debugging
+        document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = `
+                /* Visual debug helper - shows elements that should have pointer cursor */
+                button:not(:disabled):hover,
+                .btn:not(:disabled):not(.btn-disabled):hover,
+                .cursor-pointer:hover,
+                .card.cursor-pointer:hover,
+                .card[onclick]:hover,
+                .tab:not(.tab-disabled):hover,
+                a[role="button"]:hover {
+                    outline: 2px solid red !important;
+                    outline-offset: 2px;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

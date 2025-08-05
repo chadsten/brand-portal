@@ -236,7 +236,7 @@ export function BrandPortalDashboard() {
 				</div>
 				<div className="flex gap-2">
 					<select
-						className="select select-bordered select-sm w-32"
+						className="select select-sm w-32"
 						value={timeRange}
 						onChange={(e) => setTimeRange(e.target.value)}
 					>

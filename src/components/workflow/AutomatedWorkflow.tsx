@@ -855,7 +855,7 @@ export function AutomatedWorkflow({
 	};
 
 	const renderCreateWorkflowModal = () => (
-		<dialog className={`modal ${isCreateModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isCreateModalOpen}>
 			<div className="modal-box w-11/12 max-w-5xl">
 				<div className="flex items-center justify-between mb-4">
 					<h3 className="font-semibold text-lg">Create New Workflow</h3>
@@ -871,26 +871,24 @@ export function AutomatedWorkflow({
 						<div className="space-y-4">
 							<h4 className="font-semibold">Basic Information</h4>
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-								<div className="form-control w-full">
-									<label className="label">
-										<span className="label-text">Workflow Name</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="workflow-name">Workflow Name</label>
 									<input
+										id="workflow-name"
 										type="text"
 										placeholder="Enter workflow name"
-										className="input input-bordered w-full"
+										className="input w-full"
 										value={newWorkflow.name || ''}
 										onChange={(e) =>
 											setNewWorkflow({ ...newWorkflow, name: e.target.value })
 										}
 									/>
 								</div>
-								<div className="form-control w-full">
-									<label className="label">
-										<span className="label-text">Category</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="workflow-category">Category</label>
 									<select
-										className="select select-bordered w-full"
+										id="workflow-category"
+										className="select w-full"
 										value={newWorkflow.category || 'asset_management'}
 										onChange={(e) =>
 											setNewWorkflow({
@@ -907,12 +905,11 @@ export function AutomatedWorkflow({
 									</select>
 								</div>
 							</div>
-							<div className="form-control w-full">
-								<label className="label">
-									<span className="label-text">Description</span>
-								</label>
+							<div className="w-full">
+								<label className="label" htmlFor="workflow-description">Description</label>
 								<textarea
-									className="textarea textarea-bordered w-full"
+									id="workflow-description"
+									className="textarea w-full"
 									placeholder="Describe what this workflow does"
 									value={newWorkflow.description || ''}
 									onChange={(e) =>
@@ -925,12 +922,11 @@ export function AutomatedWorkflow({
 
 						<div className="space-y-4">
 							<h4 className="font-semibold">Trigger Configuration</h4>
-							<div className="form-control w-full">
-								<label className="label">
-									<span className="label-text">Trigger Type</span>
-								</label>
+							<div className="w-full">
+								<label className="label" htmlFor="trigger-type">Trigger Type</label>
 								<select
-									className="select select-bordered w-full"
+									id="trigger-type"
+									className="select w-full"
 									value={newWorkflow.trigger?.type || 'manual'}
 									onChange={(e) =>
 										setNewWorkflow({
@@ -986,7 +982,7 @@ export function AutomatedWorkflow({
 	);
 
 	const renderWorkflowDetailModal = () => (
-		<dialog className={`modal ${isDetailModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isDetailModalOpen}>
 			<div className="modal-box w-11/12 max-w-7xl">
 				{selectedWorkflow && (
 					<>
@@ -1179,7 +1175,7 @@ export function AutomatedWorkflow({
 	);
 
 	const renderRunWorkflowModal = () => (
-		<dialog className={`modal ${isRunModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isRunModalOpen}>
 			<div className="modal-box">
 				{selectedWorkflow && (
 					<>

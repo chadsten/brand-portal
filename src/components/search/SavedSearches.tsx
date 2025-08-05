@@ -475,7 +475,7 @@ export function SavedSearches({
 			</div>
 
 			{/* Edit Search Modal */}
-			<dialog className={`modal ${isEditModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isEditModalOpen}>
 				<div className="modal-box w-11/12 max-w-2xl">
 					{editingSearch && (
 						<>
@@ -486,7 +486,7 @@ export function SavedSearches({
 										<span className="label-text">Search Name</span>
 									</label>
 									<input
-										className="input input-bordered w-full"
+										className="input w-full"
 										value={editingSearch.name}
 										onChange={(e) =>
 											setEditingSearch({ ...editingSearch, name: e.target.value })
@@ -498,7 +498,7 @@ export function SavedSearches({
 										<span className="label-text">Description</span>
 									</label>
 									<textarea
-										className="textarea textarea-bordered w-full"
+										className="textarea w-full"
 										placeholder="Describe what this search is for..."
 										value={editingSearch.description || ""}
 										onChange={(e) =>
@@ -549,7 +549,7 @@ export function SavedSearches({
 			</dialog>
 
 			{/* Alert Configuration Modal */}
-			<dialog className={`modal ${isAlertModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isAlertModalOpen}>
 				<div className="modal-box w-11/12 max-w-lg">
 					{editingSearch && (
 						<>
@@ -562,7 +562,7 @@ export function SavedSearches({
 											<span className="label-text">How often to check</span>
 										</label>
 										<select
-											className="select select-bordered w-full"
+											className="select w-full"
 											value={editingSearch.alerts.frequency}
 											onChange={(e) =>
 												setEditingSearch({
@@ -613,7 +613,7 @@ export function SavedSearches({
 											</span>
 											<input
 												type="number"
-												className="input input-bordered input-sm w-20"
+												className="input input-sm w-20"
 												value={String(
 													editingSearch.alerts.conditions.thresholdCount || "",
 												)}

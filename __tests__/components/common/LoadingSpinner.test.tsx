@@ -13,26 +13,41 @@ jest.mock('lucide-react', () => ({
   Loader2: ({ className }: any) => <div className={className} data-testid="loader2-icon" />,
 }));
 
-// Mock @heroui/react components
-jest.mock('@heroui/react', () => ({
+// Mock DaisyUI components (no library imports needed as DaisyUI uses pure CSS classes)
+// These mocks simulate the expected HTML structure with DaisyUI classes
+const mockDaisyUIComponents = {
   Spinner: ({ size, color }: any) => (
-    <div role="progressbar" data-size={size} data-color={color} />
+    <span 
+      className={`loading loading-spinner ${size ? `loading-${size}` : ''} ${color ? `text-${color}` : ''}`}
+      role="progressbar" 
+    />
   ),
   Card: ({ children, className }: any) => (
-    <div className={className} role="presentation">{children}</div>
+    <div className={`card ${className || ''}`} role="presentation">{children}</div>
   ),
-  CardBody: ({ children }: any) => <div>{children}</div>,
+  CardBody: ({ children }: any) => <div className="card-body">{children}</div>,
   Skeleton: ({ children, isLoaded, className }: any) => (
-    <div className={className} data-loaded={isLoaded ? "true" : "false"}>
-      {children}
+    <div 
+      className={`${isLoaded ? '' : 'skeleton'} ${className || ''}`} 
+      data-loaded={isLoaded ? "true" : "false"}
+    >
+      {isLoaded ? children : null}
     </div>
   ),
-}));
+};
+
+// Make components available globally for the test
+global.Spinner = mockDaisyUIComponents.Spinner;
+global.Card = mockDaisyUIComponents.Card;
+global.CardBody = mockDaisyUIComponents.CardBody;
+global.Skeleton = mockDaisyUIComponents.Skeleton;
 
 describe('LoadingSpinner', () => {
   it('renders with default props', () => {
     render(<LoadingSpinner />);
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    const spinner = screen.getByRole('progressbar');
+    expect(spinner).toBeInTheDocument();
+    expect(spinner).toHaveClass('loading', 'loading-spinner');
   });
 
   it('renders with custom label', () => {

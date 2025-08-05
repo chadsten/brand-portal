@@ -256,7 +256,7 @@ export function ReportingSystem({
 	};
 
 	const renderCreateReportModal = () => (
-		<dialog className={`modal ${isCreateModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isCreateModalOpen}>
 			<div className="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
 				<div className="flex justify-between items-start mb-4">
 					<h3 className="font-semibold text-lg">Create New Report</h3>
@@ -268,13 +268,13 @@ export function ReportingSystem({
 						<div className="space-y-4">
 							<h4 className="font-semibold">Basic Information</h4>
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-								<div className="form-control">
+								<div>
 									<label className="label">
 										<span className="label-text">Report Name</span>
 									</label>
 									<input
 										type="text"
-										className="input input-bordered"
+										className="input"
 										placeholder="Enter report name"
 										value={newReport.name || ""}
 										onChange={(e) =>
@@ -282,12 +282,12 @@ export function ReportingSystem({
 										}
 									/>
 								</div>
-								<div className="form-control">
+								<div>
 									<label className="label">
 										<span className="label-text">Category</span>
 									</label>
 									<select
-										className="select select-bordered"
+										className="select"
 										value={newReport.category || "usage"}
 										onChange={(e) =>
 											setNewReport({
@@ -304,12 +304,11 @@ export function ReportingSystem({
 									</select>
 								</div>
 							</div>
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">Description</span>
-								</label>
+							<div>
+								<label className="label" htmlFor="report-description">Description</label>
 								<textarea
-									className="textarea textarea-bordered"
+									id="report-description"
+									className="textarea"
 									placeholder="Describe what this report covers"
 									value={newReport.description || ""}
 									onChange={(e) =>
@@ -323,45 +322,46 @@ export function ReportingSystem({
 						{/* Report Type */}
 						<div className="space-y-4">
 							<h4 className="font-semibold">Report Configuration</h4>
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">Report Type</span>
-								</label>
-								<div className="flex gap-4">
-									<label className="cursor-pointer label">
-										<input
-											type="radio"
-											name="reportType"
-											className="radio"
-											value="on-demand"
-											checked={newReport.type === "on-demand"}
-											onChange={(e) =>
-												setNewReport({ ...newReport, type: e.target.value as any })
-											}
-										/>
-										<span className="label-text ml-2">On-Demand</span>
-									</label>
-									<label className="cursor-pointer label">
-										<input
-											type="radio"
-											name="reportType"
-											className="radio"
-											value="scheduled"
-											checked={newReport.type === "scheduled"}
-											onChange={(e) =>
-												setNewReport({ ...newReport, type: e.target.value as any })
-											}
-										/>
-										<span className="label-text ml-2">Scheduled</span>
-									</label>
-								</div>
+							<div>
+								<fieldset>
+									<legend className="label">Report Type</legend>
+									<div className="flex gap-4">
+										<label className="cursor-pointer label">
+											<input
+												id="report-type-demand"
+												type="radio"
+												name="reportType"
+												className="radio"
+												value="on-demand"
+												checked={newReport.type === "on-demand"}
+												onChange={(e) =>
+													setNewReport({ ...newReport, type: e.target.value as any })
+												}
+											/>
+											<span className="label-text ml-2">On-Demand</span>
+										</label>
+										<label className="cursor-pointer label">
+											<input
+												id="report-type-scheduled"
+												type="radio"
+												name="reportType"
+												className="radio"
+												value="scheduled"
+												checked={newReport.type === "scheduled"}
+												onChange={(e) =>
+													setNewReport({ ...newReport, type: e.target.value as any })
+												}
+											/>
+											<span className="label-text ml-2">Scheduled</span>
+										</label>
+									</div>
+								</fieldset>
 							</div>
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">Format</span>
-								</label>
+							<div>
+								<label className="label" htmlFor="report-format">Format</label>
 								<select
-									className="select select-bordered"
+									id="report-format"
+									className="select"
 									value={newReport.format || "pdf"}
 									onChange={(e) =>
 										setNewReport({
@@ -382,11 +382,13 @@ export function ReportingSystem({
 						{/* Metrics */}
 						<div className="space-y-4">
 							<h4 className="font-semibold">Metrics to Include</h4>
-							<div className="form-control">
+							<fieldset>
+								<legend className="label">Metrics to Include</legend>
 								<div className="grid grid-cols-2 gap-2">
 									{AVAILABLE_METRICS.map((metric) => (
 										<label key={metric.value} className="cursor-pointer label">
 											<input
+												id={`metric-${metric.value}`}
 												type="checkbox"
 												className="checkbox"
 												value={metric.value}
@@ -410,7 +412,7 @@ export function ReportingSystem({
 										</label>
 									))}
 								</div>
-							</div>
+							</fieldset>
 						</div>
 
 						{/* Scheduling (if scheduled) */}
@@ -418,11 +420,9 @@ export function ReportingSystem({
 							<div className="space-y-4">
 								<h4 className="font-semibold">Schedule Configuration</h4>
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Frequency</span>
-										</label>
-										<select className="select select-bordered">
+									<div>
+										<label className="label" htmlFor="schedule-frequency">Frequency</label>
+										<select id="schedule-frequency" className="select">
 											<option value="">Select frequency</option>
 											<option value="daily">Daily</option>
 											<option value="weekly">Weekly</option>
@@ -430,24 +430,22 @@ export function ReportingSystem({
 											<option value="quarterly">Quarterly</option>
 										</select>
 									</div>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Time</span>
-										</label>
+									<div>
+										<label className="label" htmlFor="schedule-time">Time</label>
 										<input 
+											id="schedule-time"
 											type="time" 
-											className="input input-bordered" 
+											className="input" 
 											placeholder="HH:MM" 
 										/>
 									</div>
 								</div>
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">Recipients</span>
-									</label>
+								<div>
+									<label className="label" htmlFor="schedule-recipients">Recipients</label>
 									<input
+										id="schedule-recipients"
 										type="text"
-										className="input input-bordered"
+										className="input"
 										placeholder="Enter email addresses (comma separated)"
 									/>
 								</div>
@@ -474,7 +472,7 @@ export function ReportingSystem({
 	);
 
 	const renderRunReportModal = () => (
-		<dialog className={`modal ${isRunModalOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isRunModalOpen}>
 			<div className="modal-box w-11/12 max-w-2xl">
 				<div className="flex justify-between items-start mb-4">
 					<h3 className="font-semibold text-lg">Run Report</h3>
@@ -825,7 +823,7 @@ export function ReportingSystem({
 
 			{/* Tabs */}
 			<div className="w-full">
-				<div className="tabs tabs-boxed mb-6">
+				<div className="tabs tabs-box mb-6">
 					<button 
 						className={`tab ${selectedTab === "templates" ? "tab-active" : ""}`}
 						onClick={() => setSelectedTab("templates")}

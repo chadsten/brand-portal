@@ -60,7 +60,6 @@ const PRESET_COLORS = [
 	"#06b6d4",
 	"#0ea5e9",
 	"#3b82f6",
-	"#6366f1",
 ];
 
 const COLLECTION_ICONS = [
@@ -110,14 +109,15 @@ export function CollectionCreateModal({
 	const templatesLoading = false;
 
 	// Mutations
-	const createCollectionMutation = {
-		mutate: (params: any) => {
-			console.log("Create collection:", params);
+	const createCollectionMutation = api.assetApi.createCollection.useMutation({
+		onSuccess: () => {
 			resetForm();
 			onSuccess();
 		},
-		isPending: false,
-	};
+		onError: (error) => {
+			console.error("Failed to create collection:", error);
+		},
+	});
 
 	const createFromTemplateMutation = {
 		mutate: (params: any) => {
@@ -158,12 +158,14 @@ export function CollectionCreateModal({
 			createCollectionMutation.mutate({
 				name: form.name || "Untitled",
 				description: form.description || "",
-				category: form.category,
 				color: form.color,
 				icon: form.icon,
 				isPublic: form.isPublic,
-				isTemplate: form.isTemplate,
 				allowContributions: form.allowContributions,
+				tags: [],
+				metadata: {
+					category: form.category,
+				},
 			});
 		}
 	};
@@ -196,23 +198,21 @@ export function CollectionCreateModal({
 		>
 
 				<div>
-					<div className="tabs tabs-boxed w-full mb-6">
-						<input
-							type="radio"
-							name="create_tabs"
-							className="tab"
-							aria-label="Manual Setup"
-							checked={activeTab === "manual"}
-							onChange={() => setActiveTab("manual")}
-						/>
-						<input
-							type="radio"
-							name="create_tabs"
-							className="tab"
-							aria-label="From Template"
-							checked={activeTab === "template"}
-							onChange={() => setActiveTab("template")}
-						/>
+					<div role="tablist" className="tabs tabs-box w-full mb-6">
+						<button
+							role="tab"
+							className={`tab ${activeTab === "manual" ? "tab-active" : ""}`}
+							onClick={() => setActiveTab("manual")}
+						>
+							Manual Setup
+						</button>
+						<button
+							role="tab"
+							className={`tab ${activeTab === "template" ? "tab-active" : ""}`}
+							onClick={() => setActiveTab("template")}
+						>
+							From Template
+						</button>
 					</div>
 					
 					<div className="tab-content">
@@ -221,35 +221,32 @@ export function CollectionCreateModal({
 								{/* Basic Information */}
 								<div className="space-y-4">
 									<h3 className="font-semibold">Basic Information</h3>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Collection Name *</span>
-										</label>
+									<div>
+										<label className="label" htmlFor="collection-name">Collection Name *</label>
 										<input
-											className="input input-bordered"
+											id="collection-name"
+											className="input"
 											placeholder="Enter collection name"
 											value={form.name}
 											onChange={(e) => setForm({ ...form, name: e.target.value })}
 										/>
 									</div>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Description</span>
-										</label>
+									<div>
+										<label className="label" htmlFor="collection-description">Description</label>
 										<textarea
-											className="textarea textarea-bordered"
+											id="collection-description"
+											className="textarea"
 											placeholder="Describe your collection (optional)"
 											value={form.description}
 											onChange={(e) => setForm({ ...form, description: e.target.value })}
 											rows={3}
 										/>
 									</div>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Category</span>
-										</label>
+									<div>
+										<label className="label" htmlFor="collection-category">Category</label>
 										<select 
-											className="select select-bordered"
+											id="collection-category"
+											className="select"
 											value={form.category}
 											onChange={(e) => setForm({ ...form, category: e.target.value })}
 										>
@@ -277,9 +274,9 @@ export function CollectionCreateModal({
 											Color
 										</label>
 										<div className="flex flex-wrap gap-2">
-											{PRESET_COLORS.map((color) => (
+											{PRESET_COLORS.map((color, index) => (
 												<button
-													key={color}
+													key={index}
 													onClick={() => setForm({ ...form, color })}
 													className={`h-8 w-8 rounded-lg border-2 transition-all ${
 														form.color === color
@@ -319,7 +316,7 @@ export function CollectionCreateModal({
 											))}
 										</div>
 										<input
-											className="input input-bordered input-sm mt-2"
+											className="input input-sm mt-2"
 											placeholder="Or enter custom emoji/icon"
 											value={form.icon}
 											onChange={(e) => setForm({ ...form, icon: e.target.value })}
@@ -526,24 +523,22 @@ export function CollectionCreateModal({
 										{/* Customization */}
 										<div className="space-y-4">
 											<h3 className="font-semibold">Customize</h3>
-											<div className="form-control">
-												<label className="label">
-													<span className="label-text">Collection Name *</span>
-												</label>
+											<div>
+												<label className="label" htmlFor="template-collection-name">Collection Name *</label>
 												<input
-													className="input input-bordered"
+													id="template-collection-name"
+													className="input"
 													placeholder="Enter collection name"
 													value={form.name}
 													onChange={(e) => setForm({ ...form, name: e.target.value })}
 													required
 												/>
 											</div>
-											<div className="form-control">
-												<label className="label">
-													<span className="label-text">Description</span>
-												</label>
+											<div>
+												<label className="label" htmlFor="template-collection-description">Description</label>
 												<textarea
-													className="textarea textarea-bordered"
+													id="template-collection-description"
+													className="textarea"
 													placeholder="Customize description (optional)"
 													value={form.description}
 													onChange={(e) => setForm({ ...form, description: e.target.value })}

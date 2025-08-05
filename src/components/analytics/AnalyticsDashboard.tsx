@@ -246,7 +246,7 @@ export function AnalyticsDashboard({
 				</div>
 				<div className="flex items-center gap-2">
 					<select
-						className="select select-bordered select-sm w-32"
+						className="select select-sm w-32"
 						value={dateRange}
 						onChange={(e) => onDateRangeChange(e.target.value as any)}
 					>
@@ -474,7 +474,7 @@ export function AnalyticsDashboard({
 
 			{/* Tabs */}
 			<div className="w-full">
-				<div className="tabs tabs-boxed mb-6">
+				<div className="tabs tabs-box mb-6">
 					<button 
 						className={`tab ${selectedTab === "overview" ? "tab-active" : ""}`}
 						onClick={() => setSelectedTab("overview")}

@@ -98,7 +98,7 @@ export default function AnalyticsPage() {
 					</div>
 					<div className="flex items-center gap-3">
 						<select
-							className="select select-bordered select-sm w-48"
+							className="select select-sm w-48"
 							value={selectedTimeRange}
 							onChange={(e) => setSelectedTimeRange(e.target.value)}
 						>
@@ -337,7 +337,7 @@ export default function AnalyticsPage() {
 										<div className="relative w-64">
 											<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 											<input
-												className="input input-bordered input-sm w-full pl-10"
+												className="input input-sm w-full pl-10"
 												placeholder="Search assets..."
 											/>
 										</div>

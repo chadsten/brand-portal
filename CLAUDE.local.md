@@ -1,5 +1,5 @@
-- Use HeroUI under import {} from "@heroui/react" for all UI components when possible.
-- When you are making new UI components look for examples in the Context7 MCP under Library ID: /daisyui/
+- This project uses DaisyUI exclusively for all UI components. NEVER use HeroUI or any other UI library.
+- When you are making new UI components look for examples in the Context7 MCP under Library ID: /saadeghi/daisyui
 - The only npm scripts you need to run are:
   - `npm run typecheck` - checks for type errors
   - `npm run check` - checks for linting errors

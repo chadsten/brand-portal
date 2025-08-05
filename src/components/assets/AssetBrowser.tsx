@@ -1,49 +1,36 @@
 "use client";
 
-// Import removed - using native HTML and DaisyUI classes
-import { useModal } from "~/hooks/useModal";
-
-// Helper function for safe date display
-const formatDateForDisplay = (date: Date | undefined | null): string => {
-	if (!date) return "";
-	try {
-		return date instanceof Date && !isNaN(date.getTime())
-			? date.toLocaleDateString()
-			: "";
-	} catch {
-		return "";
-	}
-};
 import {
 	Archive,
 	Download,
 	Edit,
 	Eye,
 	FileText,
-	Filter,
 	Grid3X3,
 	Image as ImageIcon,
 	List,
 	MoreVertical,
 	Music,
-	RotateCcw,
-	Search,
-	Share,
 	SortAsc,
 	SortDesc,
 	Trash2,
 	Video,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
+import { useUrlFilters } from "~/hooks/useUrlFilters";
+import { SidebarLayout } from "~/components/layout/SidebarLayout";
 import { AssetDetailModal } from "./AssetDetailModal";
-import { AssetFilters } from "./AssetFilters";
+import { AssetFiltersSidebar } from "./AssetFiltersSidebar";
 import { AssetGrid } from "./AssetGrid";
 import { AssetList } from "./AssetList";
 import { AssetToolbar } from "./AssetToolbar";
-import { BaseModal } from "../ui/BaseModal";
 import { CollectionSelectorModal } from "./CollectionSelectorModal";
+import { useModal } from "~/hooks/useModal";
+import { UploadManager } from "../upload";
+import { Pagination } from "~/components/ui";
+import type { DateRange } from "~/components/filters";
 
 export interface AssetBrowserProps {
 	organizationId?: string;
@@ -68,15 +55,12 @@ export interface AssetFilters {
 	fileTypes?: string[];
 	tags?: string[];
 	uploadedBy?: string;
-	dateRange?: {
-		from: Date;
-		to: Date;
-	};
-	sizeRange?: {
-		min: number;
-		max: number;
-	};
+	dateRange?: DateRange;
 	collections?: string[];
+	page?: number;
+	pageSize?: number;
+	sortField?: SortField;
+	sortOrder?: SortOrder;
 }
 
 export function AssetBrowser({
@@ -92,12 +76,40 @@ export function AssetBrowser({
 
 	// State management
 	const [viewMode, setViewMode] = useState<ViewMode>("grid");
-	const [sortField, setSortField] = useState<SortField>("createdAt");
-	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 	const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
-	const [filters, setFilters] = useState<AssetFilters>({});
-	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+
+	// URL-synced filters and pagination
+	const { filters, updateFilters, clearFilters, activeFilterCount } = useUrlFilters<AssetFilters>({
+		defaultFilters: {
+			page: 1,
+			pageSize: 25,
+			sortField: "createdAt",
+			sortOrder: "desc",
+		},
+		serializers: {
+			dateRange: {
+				serialize: (value) => JSON.stringify(value),
+				deserialize: (value) => {
+					try {
+						const parsed = JSON.parse(value);
+						return {
+							from: parsed.from ? new Date(parsed.from) : undefined,
+							to: parsed.to ? new Date(parsed.to) : undefined,
+						};
+					} catch {
+						return undefined;
+					}
+				},
+			},
+		},
+	});
+
+	// Extract pagination and sorting from URL state
+	const currentPage = filters.page || 1;
+	const pageSize = filters.pageSize || 25;
+	const sortField = filters.sortField || "createdAt";
+	const sortOrder = filters.sortOrder || "desc";
 
 	// Modal controls
 	const {
@@ -105,15 +117,28 @@ export function AssetBrowser({
 		onOpen: onDetailOpen,
 		onClose: onDetailClose,
 	} = useModal();
-	const {
-		isOpen: isFiltersOpen,
-		onOpen: onFiltersOpen,
-		onClose: onFiltersClose,
-	} = useModal();
+
+	// Enhanced close handler that clears selection
+	const handleDetailClose = useCallback(() => {
+		onDetailClose();
+		setSelectedAssetId(null);
+	}, [onDetailClose]);
+
+	// Clear selectedAssetId when modal closes (regardless of how it closes) 
+	useEffect(() => {
+		if (!isDetailOpen && selectedAssetId) {
+			setSelectedAssetId(null);
+		}
+	}, [isDetailOpen, selectedAssetId]);
 	const {
 		isOpen: isCollectionSelectorOpen,
 		onOpen: onCollectionSelectorOpen,
 		onClose: onCollectionSelectorClose,
+	} = useModal();
+	const {
+		isOpen: isUploadOpen,
+		onOpen: onUploadOpen,
+		onClose: onUploadClose,
 	} = useModal();
 
 	// API queries
@@ -134,8 +159,8 @@ export function AssetBrowser({
 					? "fileName"
 					: sortField,
 		sortOrder,
-		limit: 50,
-		offset: (currentPage - 1) * 50,
+		page: currentPage,
+		pageSize: pageSize,
 	});
 
 	// Debug logging
@@ -154,38 +179,31 @@ export function AssetBrowser({
 
 	const assets = assetsData?.assets || [];
 	const totalCount = assetsData?.total || 0;
-	const hasMore = assetsData?.hasMore || false;
+	const totalPages = assetsData?.totalPages || 0;
+	const hasNextPage = assetsData?.hasNextPage || false;
+	const hasPreviousPage = assetsData?.hasPreviousPage || false;
 
 	// Handlers
-	const handleSearch = useCallback((query: string) => {
-		setFilters((prev) => ({ ...prev, query }));
-		setCurrentPage(1);
-	}, []);
-
 	const handleFilterChange = useCallback(
 		(newFilters: Partial<AssetFilters>) => {
-			setFilters((prev) => ({ ...prev, ...newFilters }));
-			setCurrentPage(1);
+			updateFilters({ ...newFilters, page: 1 });
 		},
-		[],
+		[updateFilters],
 	);
 
 	const handleClearAllFilters = useCallback(() => {
-		setFilters({});
-		setCurrentPage(1);
-	}, []);
+		clearFilters();
+	}, [clearFilters]);
 
 	const handleSort = useCallback(
 		(field: SortField) => {
 			if (field === sortField) {
-				setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+				updateFilters({ sortOrder: sortOrder === "asc" ? "desc" : "asc", page: 1 });
 			} else {
-				setSortField(field);
-				setSortOrder("desc");
+				updateFilters({ sortField: field, sortOrder: "desc", page: 1 });
 			}
-			setCurrentPage(1);
 		},
-		[sortField],
+		[sortField, sortOrder, updateFilters],
 	);
 
 	const handleAssetClick = useCallback(
@@ -202,28 +220,40 @@ export function AssetBrowser({
 
 	const handleAssetSelect = useCallback(
 		(assetId: string, selected: boolean) => {
-			const newSelected = new Set(selectedAssets);
-			if (selected) {
-				newSelected.add(assetId);
-			} else {
-				newSelected.delete(assetId);
-			}
-			setSelectedAssets(newSelected);
-
-			if (onAssetsSelect) {
-				onAssetsSelect(Array.from(newSelected));
-			}
+			setSelectedAssets(prev => {
+				const newSelected = new Set(prev);
+				if (selected) {
+					newSelected.add(assetId);
+				} else {
+					newSelected.delete(assetId);
+				}
+				
+				if (onAssetsSelect) {
+					onAssetsSelect(Array.from(newSelected));
+				}
+				
+				return newSelected;
+			});
 		},
-		[selectedAssets, onAssetsSelect],
+		[onAssetsSelect],
 	);
 
+	const handlePageChange = useCallback((page: number) => {
+		updateFilters({ page });
+	}, [updateFilters]);
+
+	const handlePageSizeChange = useCallback((newPageSize: number) => {
+		updateFilters({ pageSize: newPageSize, page: 1 });
+	}, [updateFilters]);
+
+	const allAssetIds = useMemo(() => assets.map((asset: any) => asset.id), [assets]);
+
 	const handleSelectAll = useCallback(() => {
-		const allAssetIds = assets.map((asset: any) => asset.id);
 		setSelectedAssets(new Set(allAssetIds));
 		if (onAssetsSelect) {
 			onAssetsSelect(allAssetIds);
 		}
-	}, [assets, onAssetsSelect]);
+	}, [allAssetIds, onAssetsSelect]);
 
 	const handleClearSelection = useCallback(() => {
 		setSelectedAssets(new Set());
@@ -244,19 +274,19 @@ export function AssetBrowser({
 		return FileText;
 	};
 
-	// Compute active filter count
-	const activeFilterCount = useMemo(() => {
-		let count = 0;
-		if (filters.fileTypes?.length) count++;
-		if (filters.tags?.length) count++;
-		if (filters.uploadedBy) count++;
-		if (filters.dateRange) count++;
-		if (filters.sizeRange) count++;
-		if (filters.collections?.length) count++;
-		return count;
-	}, [filters]);
 
-	return (
+	// Create sidebar content
+	const sidebarContent = (
+		<AssetFiltersSidebar
+			filters={filters}
+			onChange={handleFilterChange}
+			onClearAll={handleClearAllFilters}
+			organizationId={organizationId}
+		/>
+	);
+
+	// Create main content
+	const mainContent = (
 		<div className="w-full space-y-6">
 			{/* Header */}
 			<div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -271,72 +301,26 @@ export function AssetBrowser({
 					</p>
 				</div>
 
-				{/* View controls */}
-				<div className="join">
-					<button
-						className={`btn btn-sm join-item ${
-							viewMode === "grid" ? "btn-primary" : "btn-outline"
-						}`}
-						onClick={() => setViewMode("grid")}
-					>
-						<Grid3X3 size={16} />
-					</button>
-					<button
-						className={`btn btn-sm join-item ${
-							viewMode === "list" ? "btn-primary" : "btn-outline"
-						}`}
-						onClick={() => setViewMode("list")}
-					>
-						<List size={16} />
-					</button>
-				</div>
-			</div>
-
-			{/* Toolbar */}
-			<AssetToolbar
-				selectedAssets={selectedAssets}
-				onSelectAll={handleSelectAll}
-				onClearSelection={handleClearSelection}
-				onRefresh={() => refetch()}
-				showUpload={showUpload}
-			/>
-
-			{/* Search and Filters */}
-			<div className="flex flex-col gap-4 sm:flex-row">
-				<div className="flex-1 relative">
-					<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
-					<input
-						className="input input-bordered w-full pl-10 text-sm"
-						placeholder="Search assets..."
-						value={filters.query || ""}
-						onChange={(e) => handleSearch(e.target.value)}
-					/>
-				</div>
-
+				{/* View controls and Sort */}
 				<div className="flex items-center gap-2">
-					<button
-						className="btn btn-outline btn-sm gap-2"
-						onClick={onFiltersOpen}
-					>
-						<Filter size={16} />
-						Filters
-						{activeFilterCount > 0 && (
-							<span className="badge badge-primary badge-sm">
-								{activeFilterCount}
-							</span>
-						)}
-					</button>
-
-					{activeFilterCount > 0 && (
+					<div className="join">
 						<button
-							className="btn btn-outline btn-sm gap-2 btn-error"
-							onClick={handleClearAllFilters}
-							title="Clear all automatic sub-filters"
+							className={`btn btn-sm join-item ${
+								viewMode === "grid" ? "btn-primary" : "btn-outline"
+							}`}
+							onClick={() => setViewMode("grid")}
 						>
-							<RotateCcw size={16} />
-							Clear all
+							<Grid3X3 size={16} />
 						</button>
-					)}
+						<button
+							className={`btn btn-sm join-item ${
+								viewMode === "list" ? "btn-primary" : "btn-outline"
+							}`}
+							onClick={() => setViewMode("list")}
+						>
+							<List size={16} />
+						</button>
+					</div>
 
 					<div className="dropdown dropdown-end">
 						<label tabIndex={0} className="btn btn-outline btn-sm gap-2">
@@ -358,64 +342,14 @@ export function AssetBrowser({
 				</div>
 			</div>
 
-			{/* Automatic Sub-Filters */}
-			{activeFilterCount > 0 && (
-				<div className="flex flex-wrap gap-2">
-					{filters.fileTypes?.map((type) => (
-						<span key={type} className="badge badge-outline gap-2">
-							{type}
-							<button 
-								className="btn btn-xs btn-ghost"
-								onClick={() =>
-									handleFilterChange({
-										fileTypes: filters.fileTypes?.filter((t) => t !== type),
-									})
-								}
-							>
-								×
-							</button>
-						</span>
-					))}
-					{filters.tags?.map((tag) => (
-						<span key={tag} className="badge badge-secondary gap-2">
-							{tag}
-							<button 
-								className="btn btn-xs btn-ghost"
-								onClick={() =>
-									handleFilterChange({
-										tags: filters.tags?.filter((t) => t !== tag),
-									})
-								}
-							>
-								×
-							</button>
-						</span>
-					))}
-					{filters.uploadedBy && (
-						<span className="badge badge-success gap-2">
-							Uploaded by: {filters.uploadedBy}
-							<button 
-								className="btn btn-xs btn-ghost"
-								onClick={() => handleFilterChange({ uploadedBy: undefined })}
-							>
-								×
-							</button>
-						</span>
-					)}
-					{filters.dateRange && (
-						<span className="badge badge-warning gap-2">
-							Date: {formatDateForDisplay(filters.dateRange.from)} -{" "}
-							{formatDateForDisplay(filters.dateRange.to)}
-							<button 
-								className="btn btn-xs btn-ghost"
-								onClick={() => handleFilterChange({ dateRange: undefined })}
-							>
-								×
-							</button>
-						</span>
-					)}
-				</div>
-			)}
+			{/* Toolbar */}
+			<AssetToolbar
+				selectedAssets={selectedAssets}
+				onSelectAll={handleSelectAll}
+				onClearSelection={handleClearSelection}
+				onRefresh={() => refetch()}
+				showUpload={showUpload}
+			/>
 
 			{/* Session Debug */}
 			{status === "unauthenticated" && (
@@ -475,7 +409,10 @@ export function AssetBrowser({
 									</p>
 								</div>
 								{showUpload && (
-									<button className="btn btn-primary btn-lg">
+									<button 
+										className="btn btn-primary btn-lg"
+										onClick={onUploadOpen}
+									>
 										Upload Assets
 									</button>
 								)}
@@ -505,15 +442,18 @@ export function AssetBrowser({
 							)}
 
 							{/* Pagination */}
-							{hasMore && (
-								<div className="flex justify-center">
-									<button
-										className="btn btn-outline"
-										onClick={() => setCurrentPage((prev) => prev + 1)}
-									>
-										Load More
-									</button>
-								</div>
+							{totalPages > 1 && (
+								<Pagination
+									currentPage={currentPage}
+									totalPages={totalPages}
+									pageSize={pageSize}
+									total={totalCount}
+									onPageChange={handlePageChange}
+									onPageSizeChange={handlePageSizeChange}
+									showPageSizeSelector={true}
+									pageSizeOptions={[25, 50, 100]}
+									disabled={isLoading}
+								/>
 							)}
 						</>
 					)}
@@ -525,7 +465,7 @@ export function AssetBrowser({
 				<AssetDetailModal
 					assetId={selectedAssetId}
 					isOpen={isDetailOpen}
-					onClose={onDetailClose}
+					onClose={handleDetailClose}
 					onEdit={() => {
 						// TODO: Implement edit functionality
 					}}
@@ -536,26 +476,6 @@ export function AssetBrowser({
 					onAddToCollection={onCollectionSelectorOpen}
 				/>
 			)}
-
-			{/* Filters Modal */}
-			<BaseModal
-				isOpen={isFiltersOpen}
-				onClose={onFiltersClose}
-				title="Filter Assets"
-				size="lg"
-			>
-				<div className="space-y-6">
-					<AssetFilters filters={filters} onChange={handleFilterChange} />
-					<div className="flex justify-end gap-2">
-						<button className="btn btn-outline" onClick={onFiltersClose}>
-							Cancel
-						</button>
-						<button className="btn btn-primary" onClick={onFiltersClose}>
-							Apply Filters
-						</button>
-					</div>
-				</div>
-			</BaseModal>
 
 			{/* Collection Selector Modal */}
 			{selectedAssetId && (
@@ -569,6 +489,34 @@ export function AssetBrowser({
 					}}
 				/>
 			)}
+
+			{/* Upload Manager Modal */}
+			<dialog className="modal modal-bottom sm:modal-middle" open={isUploadOpen}>
+				<div className="modal-box max-w-4xl w-full">
+					<UploadManager
+						onUploadComplete={(files) => {
+							console.log('Upload completed:', files);
+							refetch();
+							onUploadClose();
+						}}
+						maxFiles={50}
+						maxSize={100 * 1024 * 1024}
+					/>
+				</div>
+				<form method="dialog" className="modal-backdrop">
+					<button onClick={onUploadClose}>close</button>
+				</form>
+			</dialog>
 		</div>
+	);
+
+	return (
+		<SidebarLayout
+			sidebar={sidebarContent}
+			activeFilterCount={activeFilterCount}
+			filterTitle="Asset Filters"
+		>
+			{mainContent}
+		</SidebarLayout>
 	);
 }

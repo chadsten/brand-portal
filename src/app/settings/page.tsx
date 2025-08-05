@@ -371,11 +371,11 @@ export default function SettingsPage() {
 									<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 										<div>
 											<label className="label">
-												<span className="label-text">Full Name</span>
+												<span>Full Name</span>
 											</label>
 											<div className="relative">
 												<input
-													className="input input-bordered w-full pl-10"
+													className="input w-full pl-10"
 													value={settings.profile.name}
 													onChange={(e) =>
 														updateSettings("profile", "name", e.target.value)
@@ -386,12 +386,12 @@ export default function SettingsPage() {
 										</div>
 										<div>
 											<label className="label">
-												<span className="label-text">Email Address</span>
+												<span>Email Address</span>
 											</label>
 											<div className="relative">
 												<input
 													type="email"
-													className="input input-bordered w-full pl-10"
+													className="input w-full pl-10"
 													value={settings.profile.email}
 													onChange={(e) =>
 														updateSettings("profile", "email", e.target.value)
@@ -402,11 +402,11 @@ export default function SettingsPage() {
 										</div>
 										<div>
 											<label className="label">
-												<span className="label-text">Phone Number</span>
+												<span>Phone Number</span>
 											</label>
 											<div className="relative">
 												<input
-													className="input input-bordered w-full pl-10"
+													className="input w-full pl-10"
 													value={settings.profile.phone}
 													onChange={(e) =>
 														updateSettings("profile", "phone", e.target.value)
@@ -417,11 +417,11 @@ export default function SettingsPage() {
 										</div>
 										<div>
 											<label className="label">
-												<span className="label-text">Location</span>
+												<span>Location</span>
 											</label>
 											<div className="relative">
 												<input
-													className="input input-bordered w-full pl-10"
+													className="input w-full pl-10"
 													value={settings.profile.location}
 													onChange={(e) =>
 														updateSettings("profile", "location", e.target.value)
@@ -432,11 +432,11 @@ export default function SettingsPage() {
 										</div>
 										<div className="md:col-span-2">
 											<label className="label">
-												<span className="label-text">Website</span>
+												<span>Website</span>
 											</label>
 											<div className="relative">
 												<input
-													className="input input-bordered w-full pl-10"
+													className="input w-full pl-10"
 													value={settings.profile.website}
 													onChange={(e) =>
 														updateSettings("profile", "website", e.target.value)
@@ -449,10 +449,10 @@ export default function SettingsPage() {
 
 									<div>
 										<label className="label">
-											<span className="label-text">Bio</span>
+											<span>Bio</span>
 										</label>
 										<textarea
-											className="textarea textarea-bordered w-full h-24"
+											className="textarea w-full h-24"
 											value={settings.profile.bio}
 											onChange={(e) =>
 												updateSettings("profile", "bio", e.target.value)
@@ -471,11 +471,11 @@ export default function SettingsPage() {
 										<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 											<div>
 												<label className="label">
-													<span className="label-text">Theme</span>
+													<span>Theme</span>
 												</label>
 												<div className="relative">
 													<select
-														className="select select-bordered w-full pl-10"
+														className="select w-full pl-10"
 														value={settings.preferences.theme}
 														onChange={(e) =>
 															updateSettings(
@@ -498,10 +498,10 @@ export default function SettingsPage() {
 											</div>
 											<div>
 												<label className="label">
-													<span className="label-text">View Mode</span>
+													<span>View Mode</span>
 												</label>
 												<select
-													className="select select-bordered w-full"
+													className="select w-full"
 													value={settings.preferences.viewMode}
 													onChange={(e) =>
 														updateSettings(
@@ -525,10 +525,10 @@ export default function SettingsPage() {
 										<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 											<div>
 												<label className="label">
-													<span className="label-text">Language</span>
+													<span>Language</span>
 												</label>
 												<select
-													className="select select-bordered w-full"
+													className="select w-full"
 													value={settings.preferences.language}
 													onChange={(e) =>
 														updateSettings(
@@ -547,11 +547,11 @@ export default function SettingsPage() {
 											</div>
 											<div>
 												<label className="label">
-													<span className="label-text">Timezone</span>
+													<span>Timezone</span>
 												</label>
 												<div className="relative">
 													<select
-														className="select select-bordered w-full pl-10"
+														className="select w-full pl-10"
 														value={settings.preferences.timezone}
 														onChange={(e) =>
 															updateSettings(
@@ -572,11 +572,11 @@ export default function SettingsPage() {
 											</div>
 											<div>
 												<label className="label">
-													<span className="label-text">Date Format</span>
+													<span>Date Format</span>
 												</label>
 												<div className="relative">
 													<select
-														className="select select-bordered w-full pl-10"
+														className="select w-full pl-10"
 														value={settings.preferences.dateFormat}
 														onChange={(e) =>
 															updateSettings(
@@ -595,10 +595,10 @@ export default function SettingsPage() {
 											</div>
 											<div>
 												<label className="label">
-													<span className="label-text">Currency</span>
+													<span>Currency</span>
 												</label>
 												<select
-													className="select select-bordered w-full"
+													className="select w-full"
 													value={settings.preferences.currency}
 													onChange={(e) =>
 														updateSettings(
@@ -624,7 +624,7 @@ export default function SettingsPage() {
 										<div className="space-y-4">
 											<div>
 												<label className="label">
-													<span className="label-text">Items per page: {settings.preferences.itemsPerPage}</span>
+													<span>Items per page: {settings.preferences.itemsPerPage}</span>
 												</label>
 												<input
 													type="range"
@@ -788,11 +788,11 @@ export default function SettingsPage() {
 										</h3>
 										<div>
 											<label className="label">
-												<span className="label-text">How often do you want to receive notifications?</span>
+												<span>How often do you want to receive notifications?</span>
 											</label>
 											<div className="relative">
 												<select
-													className="select select-bordered w-full pl-10"
+													className="select w-full pl-10"
 													value={settings.notifications.frequency}
 													onChange={(e) =>
 														updateSettings(
@@ -823,11 +823,11 @@ export default function SettingsPage() {
 										</h3>
 										<div>
 											<label className="label">
-												<span className="label-text">Who can see your profile?</span>
+												<span>Who can see your profile?</span>
 											</label>
 											<div className="relative">
 												<select
-													className="select select-bordered w-full pl-10"
+													className="select w-full pl-10"
 													value={settings.privacy.profileVisibility}
 													onChange={(e) =>
 														updateSettings(
@@ -1035,7 +1035,7 @@ export default function SettingsPage() {
 										<div className="space-y-4">
 											<div>
 												<label className="label">
-													<span className="label-text">Session timeout: {settings.security.sessionTimeout} hours</span>
+													<span>Session timeout: {settings.security.sessionTimeout} hours</span>
 												</label>
 												<input
 													type="range"
@@ -1160,10 +1160,10 @@ export default function SettingsPage() {
 													{settings.integrations.slack.enabled && (
 														<div className="mt-4">
 															<label className="label">
-																<span className="label-text">Webhook URL</span>
+																<span>Webhook URL</span>
 															</label>
 															<input
-																className="input input-bordered input-sm w-full"
+																className="input input-sm w-full"
 																value={settings.integrations.slack.webhook}
 																onChange={(e) =>
 																	updateNestedSettings(
@@ -1221,10 +1221,10 @@ export default function SettingsPage() {
 													{settings.integrations.teams.enabled && (
 														<div className="mt-4">
 															<label className="label">
-																<span className="label-text">Webhook URL</span>
+																<span>Webhook URL</span>
 															</label>
 															<input
-																className="input input-bordered input-sm w-full"
+																className="input input-sm w-full"
 																value={settings.integrations.teams.webhook}
 																onChange={(e) =>
 																	updateNestedSettings(
@@ -1291,12 +1291,12 @@ export default function SettingsPage() {
 													{settings.integrations.dropbox.enabled && (
 														<div className="mt-4">
 															<label className="label">
-																<span className="label-text">Access Token</span>
+																<span>Access Token</span>
 															</label>
 															<div className="relative">
 																<input
 																	type={showPassword ? "text" : "password"}
-																	className="input input-bordered input-sm w-full pr-10"
+																	className="input input-sm w-full pr-10"
 																	value={settings.integrations.dropbox.accessToken}
 																	onChange={(e) =>
 																		updateNestedSettings(
@@ -1400,9 +1400,8 @@ export default function SettingsPage() {
 				</div>
 
 				{/* Delete Account Modal */}
-				{isDeleteModalOpen && (
-					<div className="modal modal-open">
-						<div className="modal-box">
+				<dialog className="modal" open={isDeleteModalOpen}>
+					<div className="modal-box">
 							<div className="flex items-center gap-2 mb-4">
 								<AlertTriangle className="text-error" size={20} />
 								<h3 className="font-bold text-lg">Delete Account</h3>
@@ -1417,10 +1416,10 @@ export default function SettingsPage() {
 							</p>
 							<div className="mb-6">
 								<label className="label">
-									<span className="label-text">Type 'DELETE' to confirm</span>
+									<span>Type 'DELETE' to confirm</span>
 								</label>
 								<input
-									className="input input-bordered input-error w-full"
+									className="input input-error w-full"
 									placeholder="DELETE"
 								/>
 							</div>
@@ -1439,8 +1438,7 @@ export default function SettingsPage() {
 								</button>
 							</div>
 						</div>
-					</div>
-				)}
+					</dialog>
 			</div>
 		</AppLayout>
 	);

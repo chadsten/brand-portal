@@ -367,12 +367,11 @@ export function LogoSection({
 					<h3 className="font-semibold text-lg">Logo Usage Rules</h3>
 				</div>
 				<div className="card-body space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Clear Space Guidelines</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="clear-space-guidelines">Clear Space Guidelines</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="clear-space-guidelines"
+							className="textarea"
 							placeholder="Define minimum clear space around the logo..."
 							value={logoRules.clearSpace || ""}
 							onChange={(e) => updateLogoRules("clearSpace", e.target.value)}
@@ -381,12 +380,11 @@ export function LogoSection({
 					</div>
 
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Minimum Size (px)</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="logo-min-size">Minimum Size (px)</label>
 							<input
-								className="input input-bordered"
+								id="logo-min-size"
+								className="input"
 								type="number"
 								placeholder="16"
 								value={logoRules.minSize?.toString() || ""}
@@ -395,12 +393,11 @@ export function LogoSection({
 								}
 							/>
 						</div>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Maximum Size (px)</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="logo-max-size">Maximum Size (px)</label>
 							<input
-								className="input input-bordered"
+								id="logo-max-size"
+								className="input"
 								type="number"
 								placeholder="1000"
 								value={logoRules.maxSize?.toString() || ""}
@@ -411,12 +408,11 @@ export function LogoSection({
 						</div>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Background Usage</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="background-usage">Background Usage</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="background-usage"
+							className="textarea"
 							placeholder="Specify approved backgrounds and color combinations..."
 							value={logoRules.backgrounds || ""}
 							onChange={(e) => updateLogoRules("backgrounds", e.target.value)}
@@ -424,12 +420,11 @@ export function LogoSection({
 						/>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Prohibited Usage</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="prohibited-usage">Prohibited Usage</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="prohibited-usage"
+							className="textarea"
 							placeholder="List what should NOT be done with the logo..."
 							value={logoRules.prohibited || ""}
 							onChange={(e) => updateLogoRules("prohibited", e.target.value)}
@@ -476,7 +471,7 @@ export function LogoSection({
 			</div>
 
 			{/* Logo Modal */}
-			<dialog className={`modal ${isLogoModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isLogoModalOpen}>
 				<div className="modal-box w-11/12 max-w-2xl">
 					{editingLogo && (
 						<>
@@ -488,12 +483,11 @@ export function LogoSection({
 							</div>
 							<div className="modal-body space-y-4">
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Logo Name</span>
-										</label>
+									<div className="w-full">
+										<label className="label" htmlFor="logo-name">Logo Name</label>
 										<input
-											className="input input-bordered"
+											id="logo-name"
+											className="input"
 											placeholder="e.g., Primary Logo"
 											value={editingLogo.name}
 											onChange={(e) =>
@@ -501,12 +495,11 @@ export function LogoSection({
 											}
 										/>
 									</div>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Logo Type</span>
-										</label>
+									<div className="w-full">
+										<label className="label" htmlFor="logo-type">Logo Type</label>
 										<select
-											className="select select-bordered"
+											id="logo-type"
+											className="select"
 											value={editingLogo.type}
 											onChange={(e) => {
 												setEditingLogo({ ...editingLogo, type: e.target.value as any });
@@ -521,12 +514,11 @@ export function LogoSection({
 									</div>
 								</div>
 
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">Description</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="logo-description">Description</label>
 									<textarea
-										className="textarea textarea-bordered"
+										id="logo-description"
+										className="textarea"
 										placeholder="Describe this logo variation..."
 										value={editingLogo.description}
 										onChange={(e) =>
@@ -577,12 +569,11 @@ export function LogoSection({
 								</div>
 
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Minimum Size (px)</span>
-										</label>
+									<div className="w-full">
+										<label className="label" htmlFor="logo-variation-min-size">Minimum Size (px)</label>
 										<input
-											className="input input-bordered"
+											id="logo-variation-min-size"
+											className="input"
 											type="number"
 											value={editingLogo.minSize.toString()}
 											onChange={(e) =>
@@ -593,12 +584,11 @@ export function LogoSection({
 											}
 										/>
 									</div>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">File Formats</span>
-										</label>
+									<div className="w-full">
+										<label className="label" htmlFor="file-formats">File Formats</label>
 										<input
-											className="input input-bordered"
+											id="file-formats"
+											className="input"
 											placeholder="SVG, PNG, JPG"
 											value={editingLogo.fileFormats.join(", ")}
 											onChange={(e) =>
@@ -681,7 +671,7 @@ export function LogoSection({
 			</dialog>
 
 			{/* Upload Modal */}
-			<dialog className={`modal ${isUploadModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isUploadModalOpen}>
 				<div className="modal-box">
 					<div className="flex justify-between items-center mb-4">
 						<h3 className="font-bold text-lg">Upload Logo</h3>

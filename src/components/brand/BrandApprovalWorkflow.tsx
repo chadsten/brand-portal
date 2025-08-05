@@ -1,30 +1,4 @@
 "use client";
-
-import {
-	Avatar,
-	Badge,
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	Chip,
-	Divider,
-	Input,
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	Progress,
-	Select,
-	SelectItem,
-	Spinner,
-	Tab,
-	Tabs,
-	Textarea,
-	Tooltip,
-	useDisclosure,
-} from "@heroui/react";
 import {
 	AlertTriangle,
 	Calendar,
@@ -142,16 +116,13 @@ export function BrandApprovalWorkflow() {
 	});
 
 	// Modal controls
-	const {
-		isOpen: isDetailOpen,
-		onOpen: onDetailOpen,
-		onClose: onDetailClose,
-	} = useDisclosure();
-	const {
-		isOpen: isReviewOpen,
-		onOpen: onReviewOpen,
-		onClose: onReviewClose,
-	} = useDisclosure();
+	const [isDetailOpen, setIsDetailOpen] = useState(false);
+	const onDetailOpen = () => setIsDetailOpen(true);
+	const onDetailClose = () => setIsDetailOpen(false);
+	
+	const [isReviewOpen, setIsReviewOpen] = useState(false);
+	const onReviewOpen = () => setIsReviewOpen(true);
+	const onReviewClose = () => setIsReviewOpen(false);
 
 	// API queries - TODO: Implement these endpoints
 	const approvals: BrandApproval[] = []; // Placeholder

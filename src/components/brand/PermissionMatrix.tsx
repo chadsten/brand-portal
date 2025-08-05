@@ -456,23 +456,21 @@ export function PermissionMatrix() {
 			</div>
 
 			{/* Tabs */}
-			<div className="tabs tabs-boxed w-full">
-				<input
-					type="radio"
-					name="permission_tabs"
-					className="tab"
-					aria-label="Permission Matrix"
-					checked={selectedTab === "matrix"}
-					onChange={() => setSelectedTab("matrix")}
-				/>
-				<input
-					type="radio"
-					name="permission_tabs"
-					className="tab"
-					aria-label="Analysis"
-					checked={selectedTab === "analysis"}
-					onChange={() => setSelectedTab("analysis")}
-				/>
+			<div role="tablist" className="tabs tabs-box w-full">
+				<button
+					role="tab"
+					className={`tab ${selectedTab === "matrix" ? "tab-active" : ""}`}
+					onClick={() => setSelectedTab("matrix")}
+				>
+					Permission Matrix
+				</button>
+				<button
+					role="tab"
+					className={`tab ${selectedTab === "analysis" ? "tab-active" : ""}`}
+					onClick={() => setSelectedTab("analysis")}
+				>
+					Analysis
+				</button>
 			</div>
 			
 			<div className="tab-content bg-base-100 border-base-300 rounded-box p-6">
@@ -485,7 +483,7 @@ export function PermissionMatrix() {
 									<div className="relative flex-1">
 										<Shield size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40" />
 										<input
-											className="input input-bordered w-full pl-10"
+											className="input w-full pl-10"
 											placeholder="Search permissions..."
 											value={searchQuery}
 											onChange={(e) => setSearchQuery(e.target.value)}
@@ -493,7 +491,7 @@ export function PermissionMatrix() {
 									</div>
 									<div className="flex gap-2">
 										<select
-											className="select select-bordered w-48"
+											className="select w-48"
 											value={selectedCategory}
 											onChange={(e) => setSelectedCategory(e.target.value)}
 										>
@@ -505,7 +503,7 @@ export function PermissionMatrix() {
 											)}
 										</select>
 										<select
-											className="select select-bordered w-48"
+											className="select w-48"
 											value={selectedLevel}
 											onChange={(e) => setSelectedLevel(e.target.value)}
 										>
@@ -925,28 +923,25 @@ export function PermissionMatrix() {
 			</div>
 
 			{/* Template Modal */}
-			<dialog className={`modal ${isTemplateModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isTemplateModalOpen}>
 				<div className="modal-box w-11/12 max-w-2xl">
 					<div className="flex justify-between items-center mb-4">
 						<h3 className="font-bold text-lg">Create Permission Template</h3>
 						<button className="btn btn-sm btn-circle btn-ghost" onClick={onTemplateModalClose}>✕</button>
 					</div>
 					<div className="modal-body space-y-4">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Template Name</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="template-name">Template Name</label>
 							<input
-								className="input input-bordered"
+								id="template-name"
+								className="input"
 								placeholder="e.g., Marketing Team Template"
 							/>
 						</div>
 
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Base Role</span>
-							</label>
-							<select className="select select-bordered">
+						<div className="w-full">
+							<label className="label" htmlFor="base-role">Base Role</label>
+							<select id="base-role" className="select">
 								<option value="">Start from existing role</option>
 								{mockRoles.map((role) => (
 									<option key={role.roleId} value={role.roleId}>{role.roleName}</option>

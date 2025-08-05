@@ -93,7 +93,7 @@ export function CollectionSelectorModal({
 					<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 					<input
 						type="text"
-						className="input input-bordered w-full pl-10"
+						className="input w-full pl-10"
 						placeholder="Search collections..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
@@ -117,7 +117,7 @@ export function CollectionSelectorModal({
 						collections.map((collection: any) => (
 							<div
 								key={collection.id}
-								className={`card card-compact bg-base-100 border cursor-pointer transition-all hover:shadow-md ${
+								className={`card card-sm bg-base-100 border cursor-pointer transition-all hover:shadow-md ${
 									selectedCollections.has(collection.id)
 										? "border-primary bg-primary/5"
 										: "border-base-300"

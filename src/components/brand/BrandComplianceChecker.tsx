@@ -1,26 +1,4 @@
 "use client";
-
-import {
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	Chip,
-	Divider,
-	Input,
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	Progress,
-	Select,
-	SelectItem,
-	Tab,
-	Tabs,
-	Tooltip,
-	useDisclosure,
-} from "@heroui/react";
 import {
 	AlertTriangle,
 	CheckCircle,
@@ -123,11 +101,9 @@ export function BrandComplianceChecker({
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
 	const [autoFixEnabled, setAutoFixEnabled] = useState(true);
 
-	const {
-		isOpen: isDetailOpen,
-		onOpen: onDetailOpen,
-		onClose: onDetailClose,
-	} = useDisclosure();
+	const [isDetailOpen, setIsDetailOpen] = useState(false);
+	const onDetailOpen = () => setIsDetailOpen(true);
+	const onDetailClose = () => setIsDetailOpen(false);
 	const [selectedCheck, setSelectedCheck] = useState<ComplianceCheck | null>(
 		null,
 	);

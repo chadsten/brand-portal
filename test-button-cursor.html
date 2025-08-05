@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Cursor Test</title>
+    <style>
+        /* Simulate the CSS fix we added */
+        @layer utilities {
+            .btn:not(:disabled):not(.btn-disabled) {
+                cursor: pointer;
+            }
+            
+            .btn:disabled,
+            .btn.btn-disabled {
+                cursor: not-allowed;
+            }
+            
+            button:not(:disabled) {
+                cursor: pointer;
+            }
+            
+            button:disabled {
+                cursor: not-allowed;
+            }
+            
+            input[type="button"]:not(:disabled),
+            input[type="submit"]:not(:disabled),
+            input[type="reset"]:not(:disabled) {
+                cursor: pointer;
+            }
+            
+            input[type="button"]:disabled,
+            input[type="submit"]:disabled,
+            input[type="reset"]:disabled {
+                cursor: not-allowed;
+            }
+            
+            a[role="button"] {
+                cursor: pointer;
+            }
+            
+            .tab:not(.tab-disabled) {
+                cursor: pointer;
+            }
+            
+            .tab.tab-disabled {
+                cursor: not-allowed;
+            }
+            
+            .cursor-pointer {
+                cursor: pointer;
+            }
+        }
+        
+        /* Basic button styling for demo */
+        .btn {
+            padding: 8px 16px;
+            margin: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            background: #f9f9f9;
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            margin: 4px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #666;
+        }
+        
+        .tab-disabled {
+            opacity: 0.5;
+            background: #f5f5f5;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .cursor-info {
+            font-size: 12px;
+            color: #666;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Button Cursor Test</h1>
+    <p>Hover over each element to verify the cursor changes correctly:</p>
+    
+    <div class="test-section">
+        <h3>DaisyUI-style Buttons (.btn class)</h3>
+        <button class="btn">Normal Button (should show pointer)</button>
+        <button class="btn" disabled>Disabled Button (should show not-allowed)</button>
+        <button class="btn btn-disabled">Disabled with Class (should show not-allowed)</button>
+        <span class="cursor-info">✓ All buttons should have appropriate cursors</span>
+    </div>
+    
+    <div class="test-section">
+        <h3>HTML Button Elements</h3>
+        <button>Regular HTML Button (should show pointer)</button>
+        <button disabled>Disabled HTML Button (should show not-allowed)</button>
+        <span class="cursor-info">✓ All buttons should have appropriate cursors</span>
+    </div>
+    
+    <div class="test-section">
+        <h3>Input Elements</h3>
+        <input type="button" value="Input Button (should show pointer)" />
+        <input type="submit" value="Submit Button (should show pointer)" />
+        <input type="reset" value="Reset Button (should show pointer)" />
+        <input type="button" value="Disabled Input" disabled />
+        <span class="cursor-info">✓ All inputs should have appropriate cursors</span>
+    </div>
+    
+    <div class="test-section">
+        <h3>Link with Button Role</h3>
+        <a href="#" role="button" class="btn">Link as Button (should show pointer)</a>
+        <span class="cursor-info">✓ Should show pointer cursor</span>
+    </div>
+    
+    <div class="test-section">
+        <h3>Tab Elements</h3>
+        <div class="tab">Active Tab (should show pointer)</div>
+        <div class="tab tab-disabled">Disabled Tab (should show not-allowed)</div>
+        <span class="cursor-info">✓ Tabs should have appropriate cursors</span>
+    </div>
+    
+    <div class="test-section">
+        <h3>Elements with cursor-pointer class</h3>
+        <div class="cursor-pointer" style="padding: 10px; border: 1px solid #ddd; background: #f9f9f9;">
+            Clickable Div (should show pointer)
+        </div>
+        <span class="cursor-info">✓ Should show pointer cursor</span>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <p id="test-results">Move your mouse over the elements above to test cursor behavior.</p>
+        <button class="btn" onclick="runCursorTest()">Run Automated Test</button>
+    </div>
+    
+    <script>
+        function runCursorTest() {
+            const testResults = document.getElementById('test-results');
+            const elements = [
+                { selector: '.btn:not(:disabled):not(.btn-disabled)', expectedCursor: 'pointer' },
+                { selector: '.btn:disabled, .btn.btn-disabled', expectedCursor: 'not-allowed' },
+                { selector: 'button:not(:disabled)', expectedCursor: 'pointer' },
+                { selector: 'button:disabled', expectedCursor: 'not-allowed' },
+                { selector: 'a[role="button"]', expectedCursor: 'pointer' },
+                { selector: '.tab:not(.tab-disabled)', expectedCursor: 'pointer' },
+                { selector: '.tab.tab-disabled', expectedCursor: 'not-allowed' },
+                { selector: '.cursor-pointer', expectedCursor: 'pointer' }
+            ];
+            
+            let passed = 0;
+            let total = 0;
+            
+            elements.forEach(test => {
+                const matchingElements = document.querySelectorAll(test.selector);
+                matchingElements.forEach(element => {
+                    total++;
+                    const computedStyle = window.getComputedStyle(element);
+                    const actualCursor = computedStyle.cursor;
+                    
+                    if (actualCursor === test.expectedCursor) {
+                        passed++;
+                    } else {
+                        console.warn(`Element ${element.tagName}.${element.className} expected cursor: ${test.expectedCursor}, got: ${actualCursor}`);
+                    }
+                });
+            });
+            
+            testResults.innerHTML = `
+                <strong>Automated Test Results:</strong><br>
+                ✅ ${passed}/${total} elements have correct cursor behavior<br>
+                ${passed === total ? '🎉 All tests passed!' : '⚠️ Some tests failed - check browser console for details'}
+            `;
+            
+            if (passed === total) {
+                testResults.style.color = 'green';
+            } else {
+                testResults.style.color = 'orange';
+            }
+        }
+        
+        // Auto-run test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runCursorTest, 500);
+        });
+    </script>
+</body>
+</html>

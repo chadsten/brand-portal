@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from 'react';
-import { Card, CardBody, Button, Modal, ModalContent, ModalBody, ModalHeader } from '@heroui/react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { Keyboard, X } from 'lucide-react';
 
 interface KeyboardShortcut {
@@ -104,83 +103,82 @@ export function KeyboardShortcuts({
 
   return (
     <>
-      <Modal 
-        isOpen={isHelperOpen} 
-        onClose={() => setIsHelperOpen(false)}
-        size="2xl"
-        scrollBehavior="inside"
+      <dialog 
+        id="keyboard-shortcuts-modal" 
+        className="modal"
+        open={isHelperOpen}
       >
-        <ModalContent>
-          <ModalHeader className="flex items-center gap-2">
+        <div className="modal-box w-11/12 max-w-2xl">
+          <div className="flex items-center gap-2 mb-4">
             <Keyboard className="h-5 w-5" />
-            Keyboard Shortcuts
-            <Button
-              isIconOnly
-              variant="light"
-              onPress={() => setIsHelperOpen(false)}
-              className="ml-auto"
+            <h3 className="font-bold text-lg">Keyboard Shortcuts</h3>
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => setIsHelperOpen(false)}
               aria-label="Close shortcuts help"
             >
               <X className="h-4 w-4" />
-            </Button>
-          </ModalHeader>
-          <ModalBody>
-            <div className="space-y-6">
-              <div>
-                <p className="text-default-600 mb-4">
-                  Use these keyboard shortcuts to navigate the application efficiently.
-                  Press <kbd className="px-2 py-1 bg-default-100 rounded text-sm">?</kbd> anytime to show this help.
-                </p>
-              </div>
+            </button>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <p className="text-base-content/70 mb-4">
+                Use these keyboard shortcuts to navigate the application efficiently.
+                Press <kbd className="kbd kbd-sm">?</kbd> anytime to show this help.
+              </p>
+            </div>
 
-              <div className="grid gap-4">
-                {shortcuts.map((shortcut, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-default-50 hover:bg-default-100 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">
-                        {shortcut.description}
+            <div className="grid gap-4">
+              {shortcuts.map((shortcut, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-base-200 hover:bg-base-300 transition-colors"
+                >
+                  <div className="flex-1">
+                    <p className="font-medium">
+                      {shortcut.description}
+                    </p>
+                    {shortcut.global && (
+                      <p className="text-xs text-base-content/60 mt-1">
+                        Global shortcut - works anywhere in the app
                       </p>
-                      {shortcut.global && (
-                        <p className="text-xs text-default-500 mt-1">
-                          Global shortcut - works anywhere in the app
-                        </p>
-                      )}
-                    </div>
-                    <kbd className="px-3 py-1 bg-white border border-default-200 rounded-md text-sm font-mono shadow-sm">
-                      {formatShortcut(shortcut)}
-                    </kbd>
+                    )}
                   </div>
-                ))}
-              </div>
+                  <kbd className="kbd kbd-sm">
+                    {formatShortcut(shortcut)}
+                  </kbd>
+                </div>
+              ))}
+            </div>
 
-              <div className="pt-4 border-t border-default-200">
-                <h4 className="font-semibold mb-2">General Navigation</h4>
-                <div className="space-y-2 text-sm text-default-600">
-                  <div className="flex justify-between">
-                    <span>Tab / Shift + Tab</span>
-                    <span>Navigate between interactive elements</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Enter / Space</span>
-                    <span>Activate buttons and links</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Escape</span>
-                    <span>Close dialogs and dropdowns</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Arrow Keys</span>
-                    <span>Navigate within menus and lists</span>
-                  </div>
+            <div className="pt-4 border-t border-base-300">
+              <h4 className="font-semibold mb-2">General Navigation</h4>
+              <div className="space-y-2 text-sm text-base-content/70">
+                <div className="flex justify-between">
+                  <span>Tab / Shift + Tab</span>
+                  <span>Navigate between interactive elements</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Enter / Space</span>
+                  <span>Activate buttons and links</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Escape</span>
+                  <span>Close dialogs and dropdowns</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Arrow Keys</span>
+                  <span>Navigate within menus and lists</span>
                 </div>
               </div>
             </div>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={() => setIsHelperOpen(false)}>close</button>
+        </form>
+      </dialog>
     </>
   );
 }

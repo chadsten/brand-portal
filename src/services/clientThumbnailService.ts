@@ -5,11 +5,31 @@
  */
 
 import { nanoid } from 'nanoid';
-import { 
-  RENDERERS, 
-  getRendererForMimeType,
-  type ThumbnailRenderOptions 
-} from './clientThumbnailRenderers';
+
+export interface ThumbnailRenderOptions {
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'webp' | 'jpeg' | 'png';
+}
+
+// Safe client-only imports
+let clientRenderers: any = null;
+let getRendererForMimeType: any = null;
+
+async function loadClientRenderers() {
+  if (typeof window === 'undefined') {
+    throw new Error('Client renderers can only be loaded in browser environment');
+  }
+  
+  if (!clientRenderers) {
+    const module = await import('./clientThumbnailService.client');
+    clientRenderers = module.CLIENT_RENDERERS;
+    getRendererForMimeType = module.getRendererForMimeType;
+  }
+  
+  return { clientRenderers, getRendererForMimeType };
+}
 
 export interface ThumbnailGenerationResult {
   success: boolean;
@@ -33,11 +53,19 @@ export class ClientThumbnailService {
   }>();
 
   constructor() {
-    this.initWorker();
+    // Only initialize worker on client-side after window is loaded
+    if (typeof window !== 'undefined') {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.initWorker());
+      } else {
+        this.initWorker();
+      }
+    }
   }
 
   private initWorker() {
-    if (typeof window === 'undefined') return; // SSR guard
+    // Enhanced SSR guards - prevent any worker initialization during SSR
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') return;
     
     try {
       this.worker = new Worker('/thumbnail-worker.js');
@@ -91,7 +119,12 @@ export class ClientThumbnailService {
     const { onProgress, organizationId, ...renderOptions } = options;
     
     try {
-      onProgress?.(5, 'Checking file type...');
+      onProgress?.(5, 'Initializing...');
+      
+      // Load client renderers safely
+      const { clientRenderers, getRendererForMimeType } = await loadClientRenderers();
+      
+      onProgress?.(10, 'Checking file type...');
       
       // Check if file type is supported
       const rendererType = getRendererForMimeType(mimeType);
@@ -102,10 +135,17 @@ export class ClientThumbnailService {
         };
       }
 
-      onProgress?.(10, 'Downloading file...');
+      onProgress?.(20, 'Downloading file...');
       
       // Generate thumbnail using appropriate renderer
-      const renderer = RENDERERS[rendererType];
+      const renderer = clientRenderers[rendererType];
+      if (!renderer) {
+        return {
+          success: false,
+          error: `No renderer available for: ${rendererType}`
+        };
+      }
+      
       onProgress?.(30, 'Processing document...');
       
       const thumbnailBlob = await renderer(fileBlob, renderOptions);
@@ -155,6 +195,9 @@ export class ClientThumbnailService {
     if (!operation) return;
     
     try {
+      // Load client renderers safely
+      const { clientRenderers, getRendererForMimeType } = await loadClientRenderers();
+      
       // Convert array buffer back to blob
       const fileBlob = new Blob([arrayBuffer], { type: mimeType });
       
@@ -164,7 +207,11 @@ export class ClientThumbnailService {
         throw new Error(`Unsupported file type: ${mimeType}`);
       }
       
-      const renderer = RENDERERS[rendererType];
+      const renderer = clientRenderers[rendererType];
+      if (!renderer) {
+        throw new Error(`No renderer available for: ${rendererType}`);
+      }
+      
       operation.onProgress?.(60, 'Rendering thumbnail...');
       
       const thumbnailBlob = await renderer(fileBlob, options);
@@ -275,7 +322,23 @@ export class ClientThumbnailService {
    * Check if a file type is supported for thumbnail generation
    */
   isFileTypeSupported(mimeType: string): boolean {
-    return getRendererForMimeType(mimeType) !== null;
+    // Static check for supported types to avoid async loading
+    const supportedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain',
+      'text/csv',
+      'text/html',
+      'text/css',
+      'text/javascript',
+      'text/typescript',
+      'application/json',
+      'application/xml',
+      'text/xml'
+    ];
+    
+    return supportedTypes.includes(mimeType);
   }
 
   /**

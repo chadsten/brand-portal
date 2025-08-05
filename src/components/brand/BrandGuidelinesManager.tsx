@@ -152,7 +152,7 @@ export function BrandGuidelinesManager() {
 					<div className="relative max-w-md">
 						<Eye size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40" />
 						<input
-							className="input input-bordered w-full pl-10"
+							className="input w-full pl-10"
 							placeholder="Search brand guidelines..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
@@ -414,7 +414,7 @@ export function BrandGuidelinesManager() {
 			)}
 
 			{/* Create Modal */}
-			<dialog className={`modal ${isCreateOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isCreateOpen}>
 				<div className="modal-box w-11/12 max-w-2xl">
 					<div className="flex justify-between items-center mb-4">
 						<h3 className="font-bold text-lg">Create Brand Guideline</h3>
@@ -435,7 +435,7 @@ export function BrandGuidelinesManager() {
 
 			{/* Detail Modal */}
 			{selectedGuideline && (
-				<dialog className={`modal ${isDetailOpen ? 'modal-open' : ''}`}>
+				<dialog className="modal" open={isDetailOpen}>
 					<div className="modal-box w-11/12 max-w-5xl h-5/6 overflow-y-auto">
 						<div className="flex justify-between items-center mb-4">
 							<h3 className="font-bold text-lg">

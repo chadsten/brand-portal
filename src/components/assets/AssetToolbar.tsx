@@ -31,6 +31,8 @@ function useModal() {
 	};
 }
 import { api } from "~/trpc/react";
+import { UploadManager } from "../upload";
+import { CollectionCreateModal } from "../collections/CollectionCreateModal";
 
 export interface AssetToolbarProps {
 	selectedAssets: Set<string>;
@@ -70,6 +72,16 @@ export function AssetToolbar({
 		isOpen: isTagOpen,
 		onOpen: onTagOpen,
 		onClose: onTagClose,
+	} = useModal();
+	const {
+		isOpen: isUploadOpen,
+		onOpen: onUploadOpen,
+		onClose: onUploadClose,
+	} = useModal();
+	const {
+		isOpen: isCreateCollectionOpen,
+		onOpen: onCreateCollectionOpen,
+		onClose: onCreateCollectionClose,
 	} = useModal();
 
 	// API queries and mutations
@@ -272,7 +284,7 @@ export function AssetToolbar({
 	};
 
 	return (
-		<div className="flex w-full items-center justify-between rounded-lg border border-divider bg-content1 p-4">
+		<div className="flex w-full items-center justify-between rounded-lg border border-base-300 bg-base-100 p-4">
 			{/* Left side - Selection controls */}
 			<div className="flex items-center gap-3">
 				{hasSelection ? (
@@ -304,6 +316,7 @@ export function AssetToolbar({
 					<button
 						className="btn btn-primary"
 						disabled={isProcessing}
+						onClick={onUploadOpen}
 					>
 						<Upload size={16} />
 						Upload Assets
@@ -313,6 +326,7 @@ export function AssetToolbar({
 				<button
 					className="btn btn-sm btn-outline"
 					disabled={isProcessing}
+					onClick={onCreateCollectionOpen}
 				>
 					<FolderPlus size={16} />
 					New Collection
@@ -330,7 +344,7 @@ export function AssetToolbar({
 			)}
 
 			{/* Move to Collection Modal */}
-			<dialog className={`modal ${isMoveOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isMoveOpen}>
 				<div className="modal-box">
 					<h3 className="font-bold text-lg">Move to Collection</h3>
 					<div className="py-4">
@@ -339,7 +353,7 @@ export function AssetToolbar({
 							collection:
 						</p>
 						<select
-							className="select select-bordered w-full"
+							className="select w-full"
 							onChange={(e) => {
 								const collectionId = e.target.value;
 								if (collectionId) {
@@ -365,7 +379,7 @@ export function AssetToolbar({
 			</dialog>
 
 			{/* Apply Tags Modal */}
-			<dialog className={`modal ${isTagOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isTagOpen}>
 				<div className="modal-box">
 					<h3 className="font-bold text-lg">Apply Tags</h3>
 					<div className="py-4">
@@ -374,7 +388,7 @@ export function AssetToolbar({
 							{selectedCount !== 1 ? "s" : ""}:
 						</p>
 						<select
-							className="select select-bordered w-full"
+							className="select w-full"
 							multiple
 							onChange={(e) => {
 								const tagIds = Array.from(e.target.selectedOptions).map(option => option.value);
@@ -400,7 +414,7 @@ export function AssetToolbar({
 			</dialog>
 
 			{/* Bulk Edit Modal */}
-			<dialog className={`modal modal-bottom sm:modal-middle ${isBulkEditOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal modal-bottom sm:modal-middle" open={isBulkEditOpen}>
 				<div className="modal-box max-w-2xl">
 					<h3 className="font-bold text-lg">Bulk Edit Assets</h3>
 					<div className="py-4">
@@ -410,31 +424,25 @@ export function AssetToolbar({
 						</p>
 						<div className="space-y-4">
 							<div>
-								<label className="label">
-									<span className="label-text">Title Prefix</span>
-								</label>
+								<label className="label">Title Prefix</label>
 								<input
 									type="text"
 									placeholder="Add prefix to all titles"
-									className="input input-bordered w-full"
+									className="input w-full"
 								/>
 							</div>
 							<div>
-								<label className="label">
-									<span className="label-text">Description</span>
-								</label>
+								<label className="label">Description</label>
 								<textarea
 									placeholder="Set description for all assets"
-									className="textarea textarea-bordered w-full"
+									className="textarea w-full"
 									rows={3}
 								></textarea>
 							</div>
 							<div>
-								<label className="label">
-									<span className="label-text">Tags to Add</span>
-								</label>
+								<label className="label">Tags to Add</label>
 								<select
-									className="select select-bordered w-full"
+									className="select w-full"
 									multiple
 								>
 									{tags?.map((tag: any) => (
@@ -465,7 +473,7 @@ export function AssetToolbar({
 			</dialog>
 
 			{/* Delete Confirmation Modal */}
-			<dialog className={`modal ${isDeleteOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isDeleteOpen}>
 				<div className="modal-box">
 					<h3 className="font-bold text-lg">Confirm Delete</h3>
 					<div className="py-4">
@@ -491,6 +499,35 @@ export function AssetToolbar({
 					<button onClick={onDeleteClose}>close</button>
 				</form>
 			</dialog>
+
+			{/* Upload Manager Modal */}
+			<dialog className="modal modal-bottom sm:modal-middle" open={isUploadOpen}>
+				<div className="modal-box max-w-4xl w-full">
+					<UploadManager
+						onUploadComplete={(files) => {
+							console.log('Upload completed:', files);
+							onRefresh();
+							onUploadClose();
+						}}
+						maxFiles={50}
+						maxSize={100 * 1024 * 1024}
+					/>
+				</div>
+				<form method="dialog" className="modal-backdrop">
+					<button onClick={onUploadClose}>close</button>
+				</form>
+			</dialog>
+
+			{/* Collection Create Modal */}
+			<CollectionCreateModal
+				isOpen={isCreateCollectionOpen}
+				onClose={onCreateCollectionClose}
+				onSuccess={() => {
+					console.log('Collection created successfully');
+					onRefresh();
+					onCreateCollectionClose();
+				}}
+			/>
 		</div>
 	);
 }

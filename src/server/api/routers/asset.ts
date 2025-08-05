@@ -198,8 +198,11 @@ const searchAssetsSchema = z.object({
 		.enum(["createdAt", "updatedAt", "title", "fileSize", "fileName"])
 		.default("createdAt"),
 	sortOrder: z.enum(["asc", "desc"]).default("desc"),
-	limit: z.number().min(1).max(100).default(20),
-	offset: z.number().min(0).default(0),
+	page: z.number().min(1).default(1),
+	pageSize: z.number().min(1).max(100).default(25),
+	// Legacy support for offset-based queries
+	limit: z.number().min(1).max(100).optional(),
+	offset: z.number().min(0).optional(),
 });
 
 const assetPermissionSchema = z.object({
@@ -377,6 +380,26 @@ export const assetRouter = createTRPCRouter({
 			const organizationId = getOrganizationId(ctx);
 			const isSuperAdmin = ctx.session.user.isSuperAdmin || false;
 
+			// Calculate pagination parameters
+			let limit: number;
+			let offset: number;
+			let currentPage: number;
+			let pageSize: number;
+
+			if (input.limit !== undefined && input.offset !== undefined) {
+				// Legacy offset-based pagination
+				limit = input.limit;
+				offset = input.offset;
+				pageSize = limit;
+				currentPage = Math.floor(offset / limit) + 1;
+			} else {
+				// New page-based pagination
+				currentPage = input.page;
+				pageSize = input.pageSize;
+				limit = pageSize;
+				offset = (currentPage - 1) * pageSize;
+			}
+
 			// Build the where clause
 			const whereConditions = [isNull(assets.deletedAt)];
 			
@@ -420,6 +443,9 @@ export const assetRouter = createTRPCRouter({
 				.from(assets)
 				.where(and(...whereConditions));
 
+			const total = totalCount[0]?.count || 0;
+			const totalPages = Math.ceil(total / pageSize);
+
 			// Get paginated results
 			const orderByField = assets[input.sortBy];
 			const orderDirection =
@@ -428,8 +454,8 @@ export const assetRouter = createTRPCRouter({
 			const results = await ctx.db.query.assets.findMany({
 				where: and(...whereConditions),
 				orderBy: [orderDirection],
-				limit: input.limit,
-				offset: input.offset,
+				limit,
+				offset,
 				with: {
 					uploader: {
 						columns: {
@@ -449,8 +475,14 @@ export const assetRouter = createTRPCRouter({
 
 			return {
 				assets: results,
-				total: totalCount[0]?.count || 0,
-				hasMore: input.offset + input.limit < (totalCount[0]?.count || 0),
+				total,
+				currentPage,
+				pageSize,
+				totalPages,
+				hasNextPage: currentPage < totalPages,
+				hasPreviousPage: currentPage > 1,
+				// Legacy support
+				hasMore: offset + limit < total,
 			};
 		}),
 

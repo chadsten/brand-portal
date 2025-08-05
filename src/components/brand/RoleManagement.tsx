@@ -543,180 +543,178 @@ export function RoleManagement() {
 			</div>
 
 			{/* Tabs */}
-			<div className="tabs tabs-boxed w-full">
-				<input
-					type="radio"
-					name="role_tabs"
-					className="tab"
-					aria-label="Roles"
-					checked={selectedTab === "roles"}
-					onChange={() => setSelectedTab("roles")}
-				/>
-				<div className="tab-content bg-base-100 border-base-300 rounded-box p-6">
-					{selectedTab === "roles" && (
-						<div className="space-y-6">
-						{/* Search */}
-						<div className="card bg-base-100 shadow">
-							<div className="card-body">
-								<div className="relative max-w-md">
-									<Settings size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40" />
-									<input
-										className="input input-bordered w-full pl-10"
-										placeholder="Search roles..."
-										value={searchQuery}
-										onChange={(e) => setSearchQuery(e.target.value)}
-									/>
-								</div>
+			<div role="tablist" className="tabs tabs-box w-full">
+				<button
+					role="tab"
+					className={`tab ${selectedTab === "roles" ? "tab-active" : ""}`}
+					onClick={() => setSelectedTab("roles")}
+				>
+					Roles
+				</button>
+				<button
+					role="tab"
+					className={`tab ${selectedTab === "assignments" ? "tab-active" : ""}`}
+					onClick={() => setSelectedTab("assignments")}
+				>
+					User Assignments
+				</button>
+			</div>
+			
+			<div className="tab-content bg-base-100 border-base-300 rounded-box p-6">
+				{selectedTab === "roles" && (
+					<div className="space-y-6">
+					{/* Search */}
+					<div className="card bg-base-100 shadow">
+						<div className="card-body">
+							<div className="relative max-w-md">
+								<Settings size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40" />
+								<input
+									className="input w-full pl-10"
+									placeholder="Search roles..."
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+								/>
 							</div>
 						</div>
+					</div>
 
-						{/* Roles Grid */}
-						<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-							{filteredRoles.map((role) => {
-								const permissionStats = getPermissionCount(role.permissions);
-								const permissionPercentage =
-									(permissionStats.granted / permissionStats.total) * 100;
+					{/* Roles Grid */}
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{filteredRoles.map((role) => {
+							const permissionStats = getPermissionCount(role.permissions);
+							const permissionPercentage =
+								(permissionStats.granted / permissionStats.total) * 100;
 
-								return (
-									<div
-										key={role.id}
-										className="card bg-base-100 shadow border border-base-300 transition-shadow hover:shadow-md"
-									>
-										<div className="card-header pb-2">
-											<div className="flex w-full items-start justify-between">
-												<div className="flex items-center gap-3">
-													<div
-														className="flex items-center justify-center rounded-lg p-2"
-														style={{ backgroundColor: `${role.color}20` }}
-													>
-														<div style={{ color: role.color }}>
-															{getRoleIcon(role.icon)}
-														</div>
-													</div>
-													<div>
-														<h3 className="flex items-center gap-2 font-semibold">
-															{role.name}
-															{role.isBuiltIn && (
-																<span className="badge badge-warning badge-sm">
-																	Built-in
-																</span>
-															)}
-														</h3>
-														<p className="text-base-content/60 text-sm">
-															{role.userCount} users
-														</p>
+							return (
+								<div
+									key={role.id}
+									className="card bg-base-100 shadow border border-base-300 transition-shadow hover:shadow-md"
+								>
+									<div className="card-header pb-2">
+										<div className="flex w-full items-start justify-between">
+											<div className="flex items-center gap-3">
+												<div
+													className="flex items-center justify-center rounded-lg p-2"
+													style={{ backgroundColor: `${role.color}20` }}
+												>
+													<div style={{ color: role.color }}>
+														{getRoleIcon(role.icon)}
 													</div>
 												</div>
-												<div className="flex gap-1">
+												<div>
+													<h3 className="flex items-center gap-2 font-semibold">
+														{role.name}
+														{role.isBuiltIn && (
+															<span className="badge badge-warning badge-sm">
+																Built-in
+															</span>
+														)}
+													</h3>
+													<p className="text-base-content/60 text-sm">
+														{role.userCount} users
+													</p>
+												</div>
+											</div>
+											<div className="flex gap-1">
+												<button
+													className="btn btn-sm btn-outline btn-square"
+													onClick={() => handleEditRole(role)}
+												>
+													<Edit size={14} />
+												</button>
+												{!role.isBuiltIn && (
 													<button
-														className="btn btn-sm btn-outline btn-square"
-														onClick={() => handleEditRole(role)}
+														className="btn btn-sm btn-outline btn-error btn-square"
+														onClick={() => handleDeleteRole(role.id)}
 													>
-														<Edit size={14} />
+														<Trash2 size={14} />
 													</button>
-													{!role.isBuiltIn && (
-														<button
-															className="btn btn-sm btn-outline btn-error btn-square"
-															onClick={() => handleDeleteRole(role.id)}
-														>
-															<Trash2 size={14} />
-														</button>
-													)}
-												</div>
-											</div>
-										</div>
-										<div className="card-body space-y-4">
-											<p className="text-base-content/70 text-sm">
-												{role.description}
-											</p>
-
-											{/* Permission Summary */}
-											<div>
-												<div className="mb-2 flex items-center justify-between">
-													<span className="font-medium text-sm">
-														Permissions
-													</span>
-													<span className="text-base-content/60 text-sm">
-														{permissionStats.granted}/{permissionStats.total}
-													</span>
-												</div>
-												<progress
-													className={`progress progress-sm w-full ${
-														permissionPercentage > 75
-															? "progress-error"
-															: permissionPercentage > 50
-																? "progress-warning"
-																: "progress-success"
-													}`}
-													value={permissionPercentage}
-													max="100"
-												></progress>
-											</div>
-
-											{/* Quick Actions */}
-											<div className="flex gap-2">
-												<button
-													className="btn btn-sm btn-outline gap-2"
-													onClick={() => {
-														const newRole = {
-															...role,
-															id: "",
-															name: `${role.name} Copy`,
-															isBuiltIn: false,
-															userCount: 0,
-														};
-														setEditingRole(newRole);
-														setIsCreatingNew(true);
-														onRoleModalOpen();
-													}}
-												>
-													<Copy size={12} />
-													Duplicate
-												</button>
-												<button
-													className={`btn btn-sm btn-outline gap-2 ${!role.isActive ? 'btn-disabled' : ''}`}
-													disabled={!role.isActive}
-												>
-													<Users size={12} />
-													Assign Users
-												</button>
+												)}
 											</div>
 										</div>
 									</div>
-								);
-							})}
+									<div className="card-body space-y-4">
+										<p className="text-base-content/70 text-sm">
+											{role.description}
+										</p>
+
+										{/* Permission Summary */}
+										<div>
+											<div className="mb-2 flex items-center justify-between">
+												<span className="font-medium text-sm">
+													Permissions
+												</span>
+												<span className="text-base-content/60 text-sm">
+													{permissionStats.granted}/{permissionStats.total}
+												</span>
+											</div>
+											<progress
+												className={`progress progress-sm w-full ${
+													permissionPercentage > 75
+														? "progress-error"
+														: permissionPercentage > 50
+															? "progress-warning"
+															: "progress-success"
+												}`}
+												value={permissionPercentage}
+												max="100"
+											></progress>
+										</div>
+
+										{/* Quick Actions */}
+										<div className="flex gap-2">
+											<button
+												className="btn btn-sm btn-outline gap-2"
+												onClick={() => {
+													const newRole = {
+														...role,
+														id: "",
+														name: `${role.name} Copy`,
+														isBuiltIn: false,
+														userCount: 0,
+													};
+													setEditingRole(newRole);
+													setIsCreatingNew(true);
+													onRoleModalOpen();
+												}}
+											>
+												<Copy size={12} />
+												Duplicate
+											</button>
+											<button
+												className={`btn btn-sm btn-outline gap-2 ${!role.isActive ? 'btn-disabled' : ''}`}
+												disabled={!role.isActive}
+											>
+												<Users size={12} />
+												Assign Users
+											</button>
+										</div>
+									</div>
+								</div>
+							);
+						})}
+					</div>
+					</div>
+				)}
+				
+				{selectedTab === "assignments" && (
+					<div className="card bg-base-100 shadow">
+						<div className="card-body py-12 text-center">
+							<Users size={48} className="mx-auto mb-4 text-base-content/30" />
+							<h3 className="mb-2 font-semibold text-lg">
+								User Role Assignments
+							</h3>
+							<p className="mb-4 text-base-content/60">
+								Manage which users have which roles
+							</p>
+							<button className="btn btn-primary">Manage User Assignments</button>
 						</div>
-						</div>
-					)}
-				</div>
-				<input
-					type="radio"
-					name="role_tabs"
-					className="tab"
-					aria-label="User Assignments"
-					checked={selectedTab === "assignments"}
-					onChange={() => setSelectedTab("assignments")}
-				/>
-				<div className="tab-content bg-base-100 border-base-300 rounded-box p-6">
-					{selectedTab === "assignments" && (
-						<div className="card bg-base-100 shadow">
-							<div className="card-body py-12 text-center">
-								<Users size={48} className="mx-auto mb-4 text-base-content/30" />
-								<h3 className="mb-2 font-semibold text-lg">
-									User Role Assignments
-								</h3>
-								<p className="mb-4 text-base-content/60">
-									Manage which users have which roles
-								</p>
-								<button className="btn btn-primary">Manage User Assignments</button>
-							</div>
-						</div>
-					)}
-				</div>
+					</div>
+				)}
 			</div>
 
 			{/* Role Edit Modal */}
-			<dialog className={`modal ${isRoleModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isRoleModalOpen}>
 				<div className="modal-box w-11/12 max-w-4xl h-5/6 overflow-y-auto">
 					{editingRole && (
 						<>
@@ -734,12 +732,11 @@ export function RoleManagement() {
 									</div>
 									<div className="card-body space-y-4">
 										<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-											<div className="form-control">
-												<label className="label">
-													<span className="label-text">Role Name</span>
-												</label>
+											<div className="w-full">
+												<label className="label" htmlFor="role-name">Role Name</label>
 												<input
-													className="input input-bordered"
+													id="role-name"
+													className="input"
 													placeholder="e.g., Brand Manager"
 													value={editingRole.name}
 													onChange={(e) =>
@@ -771,12 +768,11 @@ export function RoleManagement() {
 											</div>
 										</div>
 
-										<div className="form-control">
-											<label className="label">
-												<span className="label-text">Description</span>
-											</label>
+										<div className="w-full">
+											<label className="label" htmlFor="role-description">Description</label>
 											<textarea
-												className="textarea textarea-bordered"
+												id="role-description"
+												className="textarea"
 												placeholder="Describe the role's purpose and responsibilities..."
 												value={editingRole.description}
 												onChange={(e) =>
@@ -816,10 +812,11 @@ export function RoleManagement() {
 													Settings
 												</label>
 												<div className="space-y-2">
-													<div className="form-control">
-														<label className="cursor-pointer label">
+													<div className="w-full">
+														<label className="cursor-pointer label" htmlFor="active-role">
 															<span className="label-text">Active Role</span>
 															<input
+																id="active-role"
 																type="checkbox"
 																className="toggle toggle-primary"
 																checked={editingRole.isActive}
@@ -864,14 +861,15 @@ export function RoleManagement() {
 																	category as keyof RolePermissions
 																],
 															).map(([permission, value]) => (
-																<div key={permission} className="form-control">
-																	<label className="cursor-pointer label">
+																<div key={permission} className="w-full">
+																	<label className="cursor-pointer label" htmlFor={`${category}-${permission}`}>
 																		<span className="label-text text-sm capitalize">
 																			{permission
 																				.replace(/([A-Z])/g, " $1")
 																				.toLowerCase()}
 																		</span>
 																		<input
+																			id={`${category}-${permission}`}
 																			type="checkbox"
 																			className="toggle toggle-primary"
 																			checked={value}

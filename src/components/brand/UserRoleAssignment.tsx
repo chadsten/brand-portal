@@ -311,18 +311,17 @@ export function UserRoleAssignment() {
 			</div>
 
 			{/* Simple modals */}
-			{isAssignModalOpen && (
-				<div className="modal modal-open">
+			<dialog className="modal" open={isAssignModalOpen}>
 					<div className="modal-box">
 						<h3 className="font-bold text-lg">Assign Role to User</h3>
 						<div className="py-4 space-y-4">
-							<select className="select select-bordered w-full">
+							<select className="select w-full">
 								<option>Select User</option>
 								{mockUsers.map((user) => (
 									<option key={user.id}>{user.name} ({user.email})</option>
 								))}
 							</select>
-							<select className="select select-bordered w-full">
+							<select className="select w-full">
 								<option>Select Role</option>
 								{mockRoles.map((role) => (
 									<option key={role.id}>{role.name}</option>
@@ -335,16 +334,14 @@ export function UserRoleAssignment() {
 						</div>
 					</div>
 					<div className="modal-backdrop" onClick={() => setIsAssignModalOpen(false)}></div>
-				</div>
-			)}
+			</dialog>
 
-			{isBulkModalOpen && (
-				<div className="modal modal-open">
+			<dialog className="modal" open={isBulkModalOpen}>
 					<div className="modal-box">
 						<h3 className="font-bold text-lg">Bulk Assign Role</h3>
 						<div className="py-4">
 							<p className="mb-4">Assign a role to {selectedUsers.length} selected users</p>
-							<select className="select select-bordered w-full">
+							<select className="select w-full">
 								<option>Select Role</option>
 								{mockRoles.map((role) => (
 									<option key={role.id}>{role.name}</option>
@@ -357,8 +354,7 @@ export function UserRoleAssignment() {
 						</div>
 					</div>
 					<div className="modal-backdrop" onClick={() => setIsBulkModalOpen(false)}></div>
-				</div>
-			)}
+			</dialog>
 		</div>
 	);
 }

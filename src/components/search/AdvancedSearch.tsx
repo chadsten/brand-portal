@@ -266,7 +266,7 @@ export function AdvancedSearch({
 			case "text":
 				return (
 					<input
-						className="input input-bordered input-sm"
+						className="input input-sm"
 						placeholder="Enter value..."
 						value={filter.value || ""}
 						onChange={(e) => handleUpdateFilter(filter.id, { value: e.target.value })}
@@ -276,7 +276,7 @@ export function AdvancedSearch({
 			case "select":
 				return (
 					<select
-						className="select select-bordered select-sm w-full"
+						className="select select-sm w-full"
 						value={filter.value || ""}
 						onChange={(e) => handleUpdateFilter(filter.id, { value: e.target.value })}
 					>
@@ -292,7 +292,7 @@ export function AdvancedSearch({
 			case "date":
 				return (
 					<input
-						className="input input-bordered input-sm"
+						className="input input-sm"
 						type="date"
 						value={filter.value || ""}
 						onChange={(e) =>
@@ -305,7 +305,7 @@ export function AdvancedSearch({
 				return (
 					<div className="flex items-center gap-2">
 						<input
-							className="input input-bordered input-sm"
+							className="input input-sm"
 							type="number"
 							placeholder="Min"
 							value={filter.value?.min || ""}
@@ -317,7 +317,7 @@ export function AdvancedSearch({
 						/>
 						<span className="text-sm">to</span>
 						<input
-							className="input input-bordered input-sm"
+							className="input input-sm"
 							type="number"
 							placeholder="Max"
 							value={filter.value?.max || ""}
@@ -348,7 +348,7 @@ export function AdvancedSearch({
 			case "tags":
 				return (
 					<input
-						className="input input-bordered input-sm"
+						className="input input-sm"
 						placeholder="Enter tags, comma separated..."
 						value={Array.isArray(filter.value) ? filter.value.join(", ") : ""}
 						onChange={(e) =>
@@ -381,7 +381,7 @@ export function AdvancedSearch({
 							<div className="relative flex-1">
 								<Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 								<input
-									className="input input-bordered input-lg w-full pl-10 pr-16"
+									className="input input-lg w-full pl-10 pr-16"
 									placeholder="Search assets, collections, and more..."
 									value={query}
 									onChange={(e) => setQuery(e.target.value)}
@@ -474,7 +474,7 @@ export function AdvancedSearch({
 													<span className="label-text text-sm">Field</span>
 												</label>
 												<select
-													className="select select-bordered select-sm w-full"
+													className="select select-sm w-full"
 													value={filter.field}
 													onChange={(e) => handleFieldChange(filter.id, e.target.value)}
 												>
@@ -491,7 +491,7 @@ export function AdvancedSearch({
 													<span className="label-text text-sm">Operator</span>
 												</label>
 												<select
-													className="select select-bordered select-sm w-full"
+													className="select select-sm w-full"
 													value={filter.operator}
 													onChange={(e) => handleUpdateFilter(filter.id, {
 														operator: e.target.value as any,
@@ -666,7 +666,7 @@ export function AdvancedSearch({
 			)}
 
 			{/* Save Preset Modal */}
-			<dialog className={`modal ${isSavePresetOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isSavePresetOpen}>
 				<div className="modal-box">
 					<h3 className="font-bold text-lg">Save Search Preset</h3>
 					<div className="py-4 space-y-4">
@@ -675,7 +675,7 @@ export function AdvancedSearch({
 								<span className="label-text">Preset Name *</span>
 							</label>
 							<input
-								className="input input-bordered w-full"
+								className="input w-full"
 								placeholder="e.g., Brand Images Only"
 								value={presetName}
 								onChange={(e) => setPresetName(e.target.value)}
@@ -687,7 +687,7 @@ export function AdvancedSearch({
 								<span className="label-text">Description</span>
 							</label>
 							<textarea
-								className="textarea textarea-bordered w-full"
+								className="textarea w-full"
 								placeholder="Describe what this preset searches for..."
 								value={presetDescription}
 								onChange={(e) => setPresetDescription(e.target.value)}

@@ -53,6 +53,9 @@ export interface CollectionSearchOptions {
 	tags?: string[];
 	sortBy?: "name" | "createdAt" | "updatedAt" | "assetCount";
 	sortOrder?: "asc" | "desc";
+	page?: number;
+	pageSize?: number;
+	// Legacy support for offset-based queries
 	limit?: number;
 	offset?: number;
 }
@@ -245,10 +248,32 @@ export class CollectionManager {
 	): Promise<{
 		collections: any[];
 		total: number;
-		hasMore: boolean;
+		currentPage: number;
+		pageSize: number;
+		totalPages: number;
+		hasNextPage: boolean;
+		hasPreviousPage: boolean;
+		hasMore: boolean; // Legacy support
 	}> {
-		const limit = options.limit || 20;
-		const offset = options.offset || 0;
+		// Calculate pagination parameters
+		let limit: number;
+		let offset: number;
+		let currentPage: number;
+		let pageSize: number;
+
+		if (options.limit !== undefined && options.offset !== undefined) {
+			// Legacy offset-based pagination
+			limit = options.limit;
+			offset = options.offset;
+			pageSize = limit;
+			currentPage = Math.floor(offset / limit) + 1;
+		} else {
+			// New page-based pagination
+			currentPage = options.page || 1;
+			pageSize = options.pageSize || 25;
+			limit = pageSize;
+			offset = (currentPage - 1) * pageSize;
+		}
 
 		// Build where conditions
 		const conditions = [
@@ -286,6 +311,9 @@ export class CollectionManager {
 			.from(assetCollections)
 			.where(and(...conditions));
 
+		const total = totalResult?.count || 0;
+		const totalPages = Math.ceil(total / pageSize);
+
 		// Build order by
 		const sortBy = options.sortBy || "createdAt";
 		const sortOrder = options.sortOrder || "desc";
@@ -297,7 +325,7 @@ export class CollectionManager {
 		const collections = await db.query.assetCollections.findMany({
 			where: and(...conditions),
 			orderBy: [orderDirection],
-			limit: limit + 1,
+			limit,
 			offset,
 			with: {
 				creator: {
@@ -311,15 +339,16 @@ export class CollectionManager {
 			},
 		});
 
-		const hasMore = collections.length > limit;
-		const resultCollections = hasMore
-			? collections.slice(0, limit)
-			: collections;
-
 		return {
-			collections: resultCollections,
-			total: totalResult?.count || 0,
-			hasMore,
+			collections,
+			total,
+			currentPage,
+			pageSize,
+			totalPages,
+			hasNextPage: currentPage < totalPages,
+			hasPreviousPage: currentPage > 1,
+			// Legacy support
+			hasMore: offset + limit < total,
 		};
 	}
 

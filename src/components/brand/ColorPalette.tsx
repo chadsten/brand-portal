@@ -178,12 +178,11 @@ export function ColorPalette({
 						</div>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Primary Color Usage Rules</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="primary-usage-rules">Primary Color Usage Rules</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="primary-usage-rules"
+							className="textarea"
 							placeholder="Describe when and how to use primary colors..."
 							value={colorRules.primaryUsage || ""}
 							onChange={(e) => updateColorRules("primaryUsage", e.target.value)}
@@ -246,12 +245,11 @@ export function ColorPalette({
 						</div>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Secondary Color Usage Rules</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="secondary-usage-rules">Secondary Color Usage Rules</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="secondary-usage-rules"
+							className="textarea"
 							placeholder="Describe when and how to use secondary colors..."
 							value={colorRules.secondaryUsage || ""}
 							onChange={(e) => updateColorRules("secondaryUsage", e.target.value)}
@@ -267,12 +265,11 @@ export function ColorPalette({
 					<h3 className="font-semibold text-lg">Accessibility Guidelines</h3>
 				</div>
 				<div className="card-body space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Contrast Requirements</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="contrast-requirements">Contrast Requirements</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="contrast-requirements"
+							className="textarea"
 							placeholder="Specify minimum contrast ratios and accessibility requirements..."
 							value={colorRules.contrast || ""}
 							onChange={(e) => updateColorRules("contrast", e.target.value)}
@@ -323,7 +320,7 @@ export function ColorPalette({
 			</div>
 
 			{/* Color Detail Modal */}
-			<dialog className={`modal ${isColorDetailOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isColorDetailOpen}>
 				<div className="modal-box w-11/12 max-w-lg">
 					{selectedColor && (
 						<>

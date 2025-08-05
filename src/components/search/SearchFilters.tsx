@@ -195,13 +195,14 @@ export function SearchFilters({
 				return (
 					<div className="space-y-2">
 						<div className="grid grid-cols-2 gap-2">
-							<div className="form-control">
-								<label className="label">
+							<div className="w-full">
+								<label className="label" htmlFor={`${group.id}-from`}>
 									<span className="label-text">From</span>
 								</label>
 								<input
+									id={`${group.id}-from`}
 									type="date"
-									className="input input-bordered input-sm"
+									className="input input-sm"
 									value={currentValue?.start || ""}
 									onChange={(e) =>
 										onFilterChange(group.id, {
@@ -211,13 +212,14 @@ export function SearchFilters({
 									}
 								/>
 							</div>
-							<div className="form-control">
-								<label className="label">
+							<div className="w-full">
+								<label className="label" htmlFor={`${group.id}-to`}>
 									<span className="label-text">To</span>
 								</label>
 								<input
+									id={`${group.id}-to`}
 									type="date"
-									className="input input-bordered input-sm"
+									className="input input-sm"
 									value={currentValue?.end || ""}
 									onChange={(e) =>
 										onFilterChange(group.id, {
@@ -266,7 +268,7 @@ export function SearchFilters({
 			case "select":
 				return (
 					<select
-						className="select select-bordered select-sm w-full"
+						className="select select-sm w-full"
 						value={currentValue || ""}
 						onChange={(e) => onFilterChange(group.id, e.target.value)}
 					>

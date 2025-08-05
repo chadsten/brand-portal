@@ -345,7 +345,7 @@ export function UserEngagement({
 				</div>
 				<div className="flex items-center gap-2">
 					<select
-						className="select select-bordered select-sm w-40"
+						className="select select-sm w-40"
 						value={engagementFilter}
 						onChange={(e) => setEngagementFilter(e.target.value)}
 					>
@@ -356,7 +356,7 @@ export function UserEngagement({
 						))}
 					</select>
 					<select
-						className="select select-bordered select-sm w-40"
+						className="select select-sm w-40"
 						value={departmentFilter}
 						onChange={(e) => setDepartmentFilter(e.target.value)}
 					>
@@ -481,7 +481,7 @@ export function UserEngagement({
 		if (!selectedUser) return null;
 
 		return (
-			<dialog className={`modal ${isUserModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isUserModalOpen}>
 				<div className="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto">
 					<div className="flex justify-between items-start mb-4">
 						<div className="flex items-center gap-3">
@@ -702,7 +702,7 @@ export function UserEngagement({
 				</div>
 				<div className="flex items-center gap-2">
 					<select
-						className="select select-bordered select-sm w-32"
+						className="select select-sm w-32"
 						value={dateRange}
 						onChange={(e) => onDateRangeChange(e.target.value as any)}
 					>
@@ -720,7 +720,7 @@ export function UserEngagement({
 
 			{/* Tabs */}
 			<div className="w-full">
-				<div className="tabs tabs-boxed mb-6">
+				<div className="tabs tabs-box mb-6">
 					<button 
 						className={`tab ${selectedTab === "overview" ? "tab-active" : ""}`}
 						onClick={() => setSelectedTab("overview")}

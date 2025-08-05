@@ -7,7 +7,7 @@ The Brand Portal is a comprehensive digital asset management system designed to 
 
 ### 1. Frontend Layer
 - **Technology**: React with TypeScript
-- **UI Framework**: HeroUI
+- **UI Framework**: DaisyUI 5 with Tailwind CSS 4
 - **State Management**: TanStack Query for server state
 - **Routing**: React Router
 - **Build Tool**: Vite
@@ -218,11 +218,43 @@ SuperAdmins (N) ──> (N) Organizations (manage)
 - **Queue System**: For asynchronous tasks
 - **Monitoring**: Performance metrics and alerting
 
+## DaisyUI 5 Component Architecture
+
+### Form Patterns and Structure
+DaisyUI 5 emphasizes semantic HTML patterns and accessibility-first design:
+
+#### Fieldset Pattern
+```html
+<fieldset class="fieldset">
+  <legend class="fieldset-legend">Form Section Title</legend>
+  <input type="text" class="input" placeholder="Input field" />
+  <p class="label">Helper text or description</p>
+</fieldset>
+```
+
+#### Component Structure
+- **Component Classes**: Single class names that apply all necessary styling (e.g., `btn`, `card`, `modal`)
+- **Part Classes**: Specific parts of components (e.g., `fieldset-legend`, `modal-header`)
+- **Modifier Classes**: Variations and states (e.g., `btn-primary`, `input-bordered`)
+
+#### Theme Integration
+- Built-in theme controller with CSS custom properties
+- Automatic dark/light mode support
+- Consistent color semantics across all components
+
+### Benefits over Previous HeroUI Implementation
+1. **Semantic HTML**: Better accessibility with proper fieldset and legend usage
+2. **Smaller Bundle**: Component-specific CSS inclusion with Tailwind CSS 4
+3. **Better Performance**: Pure CSS implementation without JavaScript overhead
+4. **Improved Theming**: Native CSS custom properties for theme switching
+5. **Enhanced Accessibility**: Built-in ARIA patterns and keyboard navigation
+
 ## Development Principles
 
 - **DRY (Don't Repeat Yourself)**: Reusable components and services
-- **Atomic Design**: Component hierarchy and reusability
+- **Atomic Design**: Component hierarchy and reusability with DaisyUI semantic patterns
 - **Type Safety**: Full TypeScript coverage
 - **Testing**: Unit, integration, and E2E tests
 - **Documentation**: Inline and external documentation
 - **Code Quality**: ESLint, Prettier, and pre-commit hooks
+- **Accessibility First**: Semantic HTML with fieldset patterns and ARIA compliance

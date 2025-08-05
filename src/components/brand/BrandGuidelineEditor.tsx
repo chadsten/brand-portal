@@ -178,39 +178,36 @@ export function BrandGuidelineEditor({
 							<div className="card bg-base-100 shadow">
 								<div className="card-body space-y-4">
 							<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">Guideline Name *</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="guideline-name">Guideline Name *</label>
 									<input
+										id="guideline-name"
 										type="text"
 										placeholder="Enter guideline name"
-										className="input input-bordered"
+										className="input"
 										value={formData.name}
 										onChange={(e) => updateFormData({ name: e.target.value })}
 										required
 									/>
 								</div>
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">Version</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="guideline-version">Version</label>
 									<input
+										id="guideline-version"
 										type="text"
 										placeholder="1.0.0"
-										className="input input-bordered"
+										className="input"
 										value={formData.version}
 										onChange={(e) => updateFormData({ version: e.target.value })}
 									/>
 								</div>
 							</div>
 
-							<div className="form-control">
-								<label className="label">
-									<span className="label-text">Description</span>
-								</label>
+							<div className="w-full">
+								<label className="label" htmlFor="guideline-description">Description</label>
 								<textarea
-									className="textarea textarea-bordered"
+									id="guideline-description"
+									className="textarea"
 									placeholder="Describe this brand guideline..."
 									value={formData.description}
 									onChange={(e) => updateFormData({ description: e.target.value })}
@@ -227,7 +224,7 @@ export function BrandGuidelineEditor({
 									<input
 										type="text"
 										placeholder="Add tag"
-										className="input input-bordered flex-1"
+										className="input flex-1"
 										value={currentTag}
 										onChange={(e) => setCurrentTag(e.target.value)}
 										onKeyDown={(e) => {
@@ -393,9 +390,8 @@ export function BrandGuidelineEditor({
 			</div>
 
 			{/* Preview Modal */}
-			{isPreviewOpen && (
-				<div className="modal modal-open">
-					<div className="modal-box w-11/12 max-w-5xl h-5/6 overflow-y-auto">
+			<dialog className="modal" open={isPreviewOpen}>
+				<div className="modal-box w-11/12 max-w-5xl h-5/6 overflow-y-auto">
 						<div className="flex items-center justify-between mb-4">
 							<h3 className="font-bold text-lg">Brand Guideline Preview</h3>
 							<button 
@@ -509,9 +505,11 @@ export function BrandGuidelineEditor({
 								Close
 							</button>
 						</div>
-					</div>
 				</div>
-			)}
+				<form method="dialog" className="modal-backdrop">
+					<button onClick={() => setIsPreviewOpen(false)}>close</button>
+				</form>
+			</dialog>
 		</div>
 	);
 }

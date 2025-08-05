@@ -12,11 +12,12 @@ export function useThumbnailUrl(
   options: UseThumbnailUrlOptions = {}
 ) {
   const { enabled = true } = options;
+  const isEnabled = enabled && !!assetId;
 
   return api.asset.getThumbnailUrl.useQuery(
-    { assetId: assetId! },
+    { assetId: assetId as string },
     {
-      enabled: enabled && !!assetId,
+      enabled: isEnabled,
       staleTime: 30 * 60 * 1000, // 30 minutes
       retry: false, // Don't retry failed thumbnail requests
     }

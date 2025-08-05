@@ -42,6 +42,6 @@ module.exports = {
 		],
 	},
 	transformIgnorePatterns: [
-		"node_modules/(?!(@heroui|lucide-react|@testing-library)/)"
+		"node_modules/(?!(lucide-react|@testing-library)/)"
 	],
 };

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useLazyImage } from '~/hooks/usePerformanceOptimization';
-import { Image } from '@heroui/react';
 
 interface LazyImageProps {
   src: string;
@@ -92,7 +91,7 @@ export function LazyImage({
   if (hasError) {
     return (
       <div 
-        className={`flex items-center justify-center bg-default-100 text-default-500 ${className}`}
+        className={`flex items-center justify-center bg-base-200 text-base-content/50 ${className}`}
         style={{ width, height }}
         role="img"
         aria-label={`Failed to load image: ${alt}`}
@@ -109,7 +108,7 @@ export function LazyImage({
     <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
       {/* Placeholder */}
       {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-default-100">
+        <div className="absolute inset-0 flex items-center justify-center bg-base-200">
           <img
             src={generatePlaceholder()}
             alt=""
@@ -118,7 +117,7 @@ export function LazyImage({
           />
           {!shouldLoad && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-pulse w-8 h-8 bg-default-300 rounded-full"></div>
+              <div className="animate-pulse w-8 h-8 bg-base-300 rounded-full"></div>
             </div>
           )}
         </div>
@@ -126,7 +125,7 @@ export function LazyImage({
 
       {/* Actual image */}
       {shouldLoad && (
-        <Image
+        <img
           ref={setRefs}
           src={lazySrc}
           alt={alt}
@@ -148,8 +147,8 @@ export function LazyImage({
 
       {/* Loading indicator */}
       {shouldLoad && !isLoaded && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-default-50">
-          <div className="flex items-center gap-2 text-default-500">
+        <div className="absolute inset-0 flex items-center justify-center bg-base-100">
+          <div className="flex items-center gap-2 text-base-content/50">
             <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
             <span className="text-sm">Loading...</span>
           </div>

@@ -1,58 +1,5 @@
 "use client";
 
-import type { ChipProps } from "@heroui/react";
-import {
-	Avatar,
-	AvatarGroup,
-	Badge,
-	BreadcrumbItem,
-	Breadcrumbs,
-	Button,
-	ButtonGroup,
-	Card,
-	CardBody,
-	CardHeader,
-	Checkbox,
-	CheckboxGroup,
-	Chip,
-	Code,
-	Divider,
-	Dropdown,
-	DropdownItem,
-	DropdownMenu,
-	DropdownTrigger,
-	Input,
-	Link,
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	Pagination,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-	Progress,
-	Radio,
-	RadioGroup,
-	Select,
-	SelectItem,
-	Skeleton,
-	Slider,
-	Spinner,
-	Switch,
-	Tab,
-	Table,
-	TableBody,
-	TableCell,
-	TableColumn,
-	TableHeader,
-	TableRow,
-	Tabs,
-	Textarea,
-	Tooltip,
-	useDisclosure,
-} from "@heroui/react";
 import {
 	AlertCircle,
 	Archive,
@@ -90,16 +37,15 @@ import {
 import { useState } from "react";
 import { AppLayout } from "~/components/layout/AppLayout";
 
-const colorVariants: ChipProps["color"][] = [
-	"default",
-	"primary",
-	"secondary",
-	"success",
-	"warning",
-	"danger",
+const colorVariants = [
+	"btn-neutral",
+	"btn-primary", 
+	"btn-secondary",
+	"btn-success",
+	"btn-warning",
+	"btn-error",
 ];
-const sizeVariants = ["sm", "md", "lg"] as const;
-const radiusVariants = ["none", "sm", "md", "lg", "full"] as const;
+const sizeVariants = ["btn-sm", "btn-md", "btn-lg"] as const;
 
 export default function ShowcasePage() {
 	const [selectedTab, setSelectedTab] = useState("buttons");
@@ -108,7 +54,9 @@ export default function ShowcasePage() {
 	const [selectedRadio, setSelectedRadio] = useState("option1");
 	const [selectedCheckboxes, setSelectedCheckboxes] = useState(["option1"]);
 	const [currentPage, setCurrentPage] = useState(1);
-	const { isOpen, onOpen, onOpenChange } = useDisclosure();
+	const [isOpen, setIsOpen] = useState(false);
+	const onOpen = () => setIsOpen(true);
+	const onClose = () => setIsOpen(false);
 
 	const tableData = [
 		{
@@ -140,121 +88,129 @@ export default function ShowcasePage() {
 				{/* Header */}
 				<div>
 					<h1 className="font-bold text-3xl">Component Showcase</h1>
-					<p className="mt-1 text-default-500">
+					<p className="mt-1 text-base-content/70">
 						A comprehensive demonstration of all UI components used in the Brand
 						Portal.
 					</p>
 				</div>
 
 				{/* Component Categories */}
-				<Card>
-					<CardBody className="p-0">
-						<Tabs
-							selectedKey={selectedTab}
-							onSelectionChange={(key) => setSelectedTab(key as string)}
-							className="w-full"
-						>
+				<div className="card bg-base-100 shadow">
+					<div className="card-body p-0">
+						<div role="tablist" className="tabs tabs-box">
+							<a 
+								className={`tab ${selectedTab === "buttons" ? "tab-active" : ""}`}
+								onClick={() => setSelectedTab("buttons")}
+							>
+								Buttons & Actions
+							</a>
+							<a 
+								className={`tab ${selectedTab === "forms" ? "tab-active" : ""}`}
+								onClick={() => setSelectedTab("forms")}
+							>
+								Form Elements
+							</a>
+							<a 
+								className={`tab ${selectedTab === "display" ? "tab-active" : ""}`}
+								onClick={() => setSelectedTab("display")}
+							>
+								Display Elements
+							</a>
+							<a 
+								className={`tab ${selectedTab === "cards" ? "tab-active" : ""}`}
+								onClick={() => setSelectedTab("cards")}
+							>
+								Cards & Layout
+							</a>
+							<a 
+								className={`tab ${selectedTab === "feedback" ? "tab-active" : ""}`}
+								onClick={() => setSelectedTab("feedback")}
+							>
+								Feedback
+							</a>
+						</div>
+						
+						<div className="p-6">
 							{/* Buttons & Actions */}
-							<Tab key="buttons" title="Buttons & Actions">
-								<div className="space-y-8 p-6">
+							{selectedTab === "buttons" && (
+								<div className="space-y-8">
 									{/* Buttons */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Buttons</h3>
 										<div className="space-y-4">
 											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													Solid Variants
 												</p>
 												<div className="flex flex-wrap gap-3">
 													{colorVariants.map((color) => (
-														<Button key={color} color={color}>
-															{color}
-														</Button>
+														<button key={color} className={`btn ${color}`}>
+															{color.replace('btn-', '')}
+														</button>
 													))}
 												</div>
 											</div>
 											<div>
-												<p className="mb-2 text-default-500 text-small">
-													Flat Variants
+												<p className="mb-2 text-base-content/70 text-sm">
+													Outline Variants
 												</p>
 												<div className="flex flex-wrap gap-3">
 													{colorVariants.map((color) => (
-														<Button key={color} color={color} variant="flat">
-															{color}
-														</Button>
+														<button key={color} className={`btn ${color} btn-outline`}>
+															{color.replace('btn-', '')}
+														</button>
 													))}
 												</div>
 											</div>
 											<div>
-												<p className="mb-2 text-default-500 text-small">
-													Bordered Variants
-												</p>
-												<div className="flex flex-wrap gap-3">
-													{colorVariants.map((color) => (
-														<Button
-															key={color}
-															color={color}
-															variant="bordered"
-														>
-															{color}
-														</Button>
-													))}
-												</div>
-											</div>
-											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													With Icons
 												</p>
 												<div className="flex flex-wrap gap-3">
-													<Button
-														color="primary"
-														startContent={<Plus size={16} />}
-													>
+													<button className="btn btn-primary">
+														<Plus size={16} />
 														Add New
-													</Button>
-													<Button
-														color="success"
-														endContent={<Download size={16} />}
-													>
+													</button>
+													<button className="btn btn-success">
+														<Download size={16} />
 														Download
-													</Button>
-													<Button
-														color="danger"
-														startContent={<Trash size={16} />}
-													>
+													</button>
+													<button className="btn btn-error">
+														<Trash size={16} />
 														Delete
-													</Button>
+													</button>
 												</div>
 											</div>
 											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													Sizes
 												</p>
 												<div className="flex items-end gap-3">
 													{sizeVariants.map((size) => (
-														<Button key={size} size={size}>
-															Size {size}
-														</Button>
+														<button key={size} className={`btn ${size}`}>
+															{size.replace('btn-', '')}
+														</button>
 													))}
 												</div>
 											</div>
 											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													Loading & Disabled
 												</p>
 												<div className="flex gap-3">
-													<Button color="primary" isLoading>
-														Loading
-													</Button>
-													<Button color="primary" isDisabled>
+													<button className="btn btn-primary">
+														<span className="loading loading-spinner"></span>
+														loading
+													</button>
+													<button className="btn btn-primary" disabled>
 														Disabled
-													</Button>
+													</button>
 												</div>
 											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Button Groups */}
 									<div>
@@ -262,178 +218,146 @@ export default function ShowcasePage() {
 											Button Groups
 										</h3>
 										<div className="space-y-4">
-											<ButtonGroup>
-												<Button>One</Button>
-												<Button>Two</Button>
-												<Button>Three</Button>
-											</ButtonGroup>
-											<ButtonGroup variant="flat">
-												<Button>Day</Button>
-												<Button>Week</Button>
-												<Button>Month</Button>
-												<Button>Year</Button>
-											</ButtonGroup>
+											<div className="join">
+												<button className="btn join-item">One</button>
+												<button className="btn join-item">Two</button>
+												<button className="btn join-item">Three</button>
+											</div>
+											<div className="join">
+												<button className="btn btn-outline join-item">Day</button>
+												<button className="btn btn-outline join-item">Week</button>
+												<button className="btn btn-outline join-item">Month</button>
+												<button className="btn btn-outline join-item">Year</button>
+											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Dropdowns */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Dropdowns</h3>
 										<div className="flex gap-3">
-											<Dropdown>
-												<DropdownTrigger>
-													<Button
-														variant="flat"
-														endContent={<ChevronRight size={16} />}
-													>
-														Actions
-													</Button>
-												</DropdownTrigger>
-												<DropdownMenu aria-label="Actions menu">
-													<DropdownItem
-														key="view"
-														startContent={<Eye size={16} />}
-													>
-														View
-													</DropdownItem>
-													<DropdownItem
-														key="edit"
-														startContent={<Edit size={16} />}
-													>
-														Edit
-													</DropdownItem>
-													<DropdownItem
-														key="share"
-														startContent={<Share size={16} />}
-													>
-														Share
-													</DropdownItem>
-													<DropdownItem
-														key="delete"
-														startContent={<Trash size={16} />}
-														color="danger"
-													>
-														Delete
-													</DropdownItem>
-												</DropdownMenu>
-											</Dropdown>
+											<div className="dropdown">
+												<button tabIndex={0} className="btn m-1">
+													Actions
+													<ChevronRight size={16} />
+												</button>
+												<ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+													<li><a><Eye size={16} />View</a></li>
+													<li><a><Edit size={16} />Edit</a></li>
+													<li><a><Share size={16} />Share</a></li>
+													<li><a className="text-error"><Trash size={16} />Delete</a></li>
+												</ul>
+											</div>
 
-											<Dropdown>
-												<DropdownTrigger>
-													<Button isIconOnly variant="flat">
-														<MoreVertical size={16} />
-													</Button>
-												</DropdownTrigger>
-												<DropdownMenu aria-label="More actions">
-													<DropdownItem key="copy">Copy</DropdownItem>
-													<DropdownItem key="paste">Paste</DropdownItem>
-													<DropdownItem key="cut">Cut</DropdownItem>
-												</DropdownMenu>
-											</Dropdown>
+											<div className="dropdown">
+												<button tabIndex={0} className="btn btn-square">
+													<MoreVertical size={16} />
+												</button>
+												<ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+													<li><a>Copy</a></li>
+													<li><a>Paste</a></li>
+													<li><a>Cut</a></li>
+												</ul>
+											</div>
 										</div>
 									</div>
 								</div>
-							</Tab>
+							)}
 
 							{/* Form Elements */}
-							<Tab key="forms" title="Form Elements">
-								<div className="space-y-8 p-6">
+							{selectedTab === "forms" && (
+								<div className="space-y-8">
 									{/* Inputs */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Inputs</h3>
 										<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-											<Input
-												label="Default Input"
-												placeholder="Enter text..."
-											/>
-											<Input
-												label="With Description"
-												placeholder="Enter text..."
-												description="This is a helper text"
-											/>
-											<Input
-												label="Required"
-												placeholder="Enter text..."
-												isRequired
-											/>
-											<Input
-												label="Disabled"
-												placeholder="Disabled input"
-												isDisabled
-											/>
-											<Input
-												label="Read Only"
-												value="Read only value"
-												isReadOnly
-											/>
-											<Input
-												label="With Error"
-												placeholder="Enter text..."
-												isInvalid
-												errorMessage="This field is required"
-											/>
-											<Input
-												label="With Start Icon"
-												placeholder="Search..."
-												startContent={<Search size={16} />}
-											/>
-											<Input
-												label="With End Icon"
-												placeholder="Enter email..."
-												endContent={<User size={16} />}
-											/>
+											<div className="w-full">
+												<label className="label" htmlFor="default-input">Default Input</label>
+												<input id="default-input" type="text" placeholder="Enter text..." className="input w-full" />
+											</div>
+											
+											<div className="w-full">
+												<label className="label" htmlFor="desc-input">With Description</label>
+												<input id="desc-input" type="text" placeholder="Enter text..." className="input w-full" />
+												<div className="label">
+													<span className="text-xs opacity-70">This is a helper text</span>
+												</div>
+											</div>
+											
+											<div className="w-full">
+												<label className="label" htmlFor="required-input">Required</label>
+												<input id="required-input" type="text" placeholder="Enter text..." className="input w-full" required />
+											</div>
+											
+											<div className="w-full">
+												<label className="label" htmlFor="disabled-input">Disabled</label>
+												<input id="disabled-input" type="text" placeholder="Disabled input" className="input w-full" disabled />
+											</div>
+											
+											<div className="w-full">
+												<label className="label" htmlFor="readonly-input">Read Only</label>
+												<input id="readonly-input" type="text" value="Read only value" className="input w-full" readOnly />
+											</div>
+											
+											<div className="w-full">
+												<label className="label" htmlFor="error-input">With Error</label>
+												<input id="error-input" type="text" placeholder="Enter text..." className="input input-error w-full" />
+												<div className="label">
+													<span className="text-xs text-error">This field is required</span>
+												</div>
+											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Textarea */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Textarea</h3>
 										<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-											<Textarea
-												label="Default Textarea"
-												placeholder="Enter description..."
-											/>
-											<Textarea
-												label="With Min/Max Rows"
-												placeholder="Auto-resizing textarea..."
-												minRows={3}
-												maxRows={6}
-											/>
+											<div>
+												<label className="label" htmlFor="default-textarea">Default Textarea</label>
+												<textarea id="default-textarea" className="textarea" placeholder="Enter description..."></textarea>
+											</div>
+											
+											<div>
+												<label className="label" htmlFor="autoresize-textarea">Auto-resizing</label>
+												<textarea id="autoresize-textarea" className="textarea" placeholder="Auto-resizing textarea..." rows={3}></textarea>
+											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Select */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Select</h3>
 										<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-											<Select
-												label="Choose an option"
-												placeholder="Select an option"
-											>
-												<SelectItem key="option1">Option 1</SelectItem>
-												<SelectItem key="option2">Option 2</SelectItem>
-												<SelectItem key="option3">Option 3</SelectItem>
-											</Select>
-											<Select
-												label="Multiple Selection"
-												placeholder="Select options"
-												selectionMode="multiple"
-											>
-												<SelectItem key="react">React</SelectItem>
-												<SelectItem key="vue">Vue</SelectItem>
-												<SelectItem key="angular">Angular</SelectItem>
-												<SelectItem key="svelte">Svelte</SelectItem>
-											</Select>
+											<div className="w-full">
+												<label className="label" htmlFor="single-select">Choose an option</label>
+												<select id="single-select" className="select">
+													<option disabled selected>Select an option</option>
+													<option>Option 1</option>
+													<option>Option 2</option>
+													<option>Option 3</option>
+												</select>
+											</div>
+											
+											<div className="w-full">
+												<label className="label" htmlFor="multi-select">Multiple Selection</label>
+												<select id="multi-select" className="select" multiple>
+													<option>React</option>
+													<option>Vue</option>
+													<option>Angular</option>
+													<option>Svelte</option>
+												</select>
+											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Checkboxes & Radios */}
 									<div>
@@ -442,35 +366,47 @@ export default function ShowcasePage() {
 										</h3>
 										<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 											<div>
-												<p className="mb-3 text-default-500 text-small">
+												<p className="mb-3 text-base-content/70 text-sm">
 													Checkbox Group
 												</p>
-												<CheckboxGroup
-													value={selectedCheckboxes}
-													onValueChange={setSelectedCheckboxes}
-												>
-													<Checkbox value="option1">Option 1</Checkbox>
-													<Checkbox value="option2">Option 2</Checkbox>
-													<Checkbox value="option3">Option 3</Checkbox>
-												</CheckboxGroup>
+												<div>
+													<label className="label cursor-pointer">
+														<input id="checkbox-1" type="checkbox" className="checkbox" />
+														Option 1
+													</label>
+													<label className="label cursor-pointer">
+														<input id="checkbox-2" type="checkbox" className="checkbox" />
+														Option 2
+													</label>
+													<label className="label cursor-pointer">
+														<input id="checkbox-3" type="checkbox" className="checkbox" />
+														Option 3
+													</label>
+												</div>
 											</div>
 											<div>
-												<p className="mb-3 text-default-500 text-small">
+												<p className="mb-3 text-base-content/70 text-sm">
 													Radio Group
 												</p>
-												<RadioGroup
-													value={selectedRadio}
-													onValueChange={setSelectedRadio}
-												>
-													<Radio value="option1">Option 1</Radio>
-													<Radio value="option2">Option 2</Radio>
-													<Radio value="option3">Option 3</Radio>
-												</RadioGroup>
+												<div>
+													<label className="label cursor-pointer">
+														<input id="radio-1" type="radio" name="radio-group" className="radio" />
+														Option 1
+													</label>
+													<label className="label cursor-pointer">
+														<input id="radio-2" type="radio" name="radio-group" className="radio" />
+														Option 2
+													</label>
+													<label className="label cursor-pointer">
+														<input id="radio-3" type="radio" name="radio-group" className="radio" />
+														Option 3
+													</label>
+												</div>
 											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Switch & Slider */}
 									<div>
@@ -479,430 +415,292 @@ export default function ShowcasePage() {
 										</h3>
 										<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 											<div className="space-y-4">
-												<p className="text-default-500 text-small">Switches</p>
+												<p className="text-base-content/70 text-sm">Switches</p>
 												<div className="flex gap-4">
-													<Switch
-														isSelected={switchValue}
-														onValueChange={setSwitchValue}
-													>
-														Default
-													</Switch>
-													<Switch defaultSelected color="success">
-														Success
-													</Switch>
-													<Switch isDisabled>Disabled</Switch>
+													<div>
+														<label className="label cursor-pointer">
+															<input id="toggle-default" type="checkbox" className="toggle" />
+															Default
+														</label>
+													</div>
+													<div>
+														<label className="label cursor-pointer">
+															<input id="toggle-success" type="checkbox" className="toggle toggle-success" defaultChecked />
+															Success
+														</label>
+													</div>
+													<div>
+														<label className="label cursor-pointer">
+															<input id="toggle-disabled" type="checkbox" className="toggle" disabled />
+															Disabled
+														</label>
+													</div>
 												</div>
 											</div>
 											<div className="space-y-4">
-												<p className="text-default-500 text-small">Sliders</p>
-												<Slider
-													label="Default"
-													value={sliderValue}
-													onChange={(value) =>
-														setSliderValue(
-															Array.isArray(value) ? value[0] || 0 : value,
-														)
-													}
-													className="max-w-md"
-												/>
-												<Slider
-													label="With Steps"
-													step={10}
-													maxValue={100}
-													minValue={0}
-													defaultValue={40}
-													className="max-w-md"
-												/>
+												<p className="text-base-content/70 text-sm">Range Sliders</p>
+												<div>
+													<label className="label" htmlFor="range-default">Default</label>
+													<input id="range-default" type="range" min={0} max="100" value={sliderValue} className="range" />
+												</div>
+												<div>
+													<label className="label" htmlFor="range-steps">With Steps</label>
+													<input id="range-steps" type="range" min={0} max="100" step="10" defaultValue="40" className="range" />
+												</div>
 											</div>
 										</div>
 									</div>
 								</div>
-							</Tab>
+							)}
 
 							{/* Display Elements */}
-							<Tab key="display" title="Display Elements">
-								<div className="space-y-8 p-6">
-									{/* Chips */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Chips</h3>
-										<div className="space-y-4">
-											<div>
-												<p className="mb-2 text-default-500 text-small">
-													Colors
-												</p>
-												<div className="flex flex-wrap gap-2">
-													{colorVariants.map((color) => (
-														<Chip key={color} color={color}>
-															{color}
-														</Chip>
-													))}
-												</div>
-											</div>
-											<div>
-												<p className="mb-2 text-default-500 text-small">
-													Variants
-												</p>
-												<div className="flex flex-wrap gap-2">
-													<Chip variant="solid">Solid</Chip>
-													<Chip variant="bordered">Bordered</Chip>
-													<Chip variant="light">Light</Chip>
-													<Chip variant="flat">Flat</Chip>
-													<Chip variant="faded">Faded</Chip>
-													<Chip variant="shadow">Shadow</Chip>
-													<Chip variant="dot">Dot</Chip>
-												</div>
-											</div>
-											<div>
-												<p className="mb-2 text-default-500 text-small">
-													With Icons
-												</p>
-												<div className="flex flex-wrap gap-2">
-													<Chip
-														startContent={<Check size={16} />}
-														color="success"
-													>
-														Approved
-													</Chip>
-													<Chip
-														startContent={<Clock size={16} />}
-														color="warning"
-													>
-														Pending
-													</Chip>
-													<Chip startContent={<X size={16} />} color="danger">
-														Rejected
-													</Chip>
-												</div>
-											</div>
-										</div>
-									</div>
-
-									<Divider />
-
+							{selectedTab === "display" && (
+								<div className="space-y-8">
 									{/* Badges */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Badges</h3>
-										<div className="flex items-center gap-6">
-											<Badge content="5" color="danger">
-												<Avatar src="/avatar-sarah.jpg" />
-											</Badge>
-											<Badge content="New" color="success">
-												<Button>Messages</Button>
-											</Badge>
-											<Badge content="99+" color="primary">
-												<Bell size={24} />
-											</Badge>
-											<Badge
-												content=""
-												color="success"
-												placement="bottom-right"
-												shape="circle"
-											>
-												<Avatar src="/avatar-mike.jpg" />
-											</Badge>
+										<div className="space-y-4">
+											<div>
+												<p className="mb-2 text-base-content/70 text-sm">
+													Colors
+												</p>
+												<div className="flex flex-wrap gap-2">
+													<div className="badge">neutral</div>
+													<div className="badge badge-primary">primary</div>
+													<div className="badge badge-secondary">secondary</div>
+													<div className="badge badge-success">success</div>
+													<div className="badge badge-warning">warning</div>
+													<div className="badge badge-error">error</div>
+												</div>
+											</div>
+											<div>
+												<p className="mb-2 text-base-content/70 text-sm">
+													Variants
+												</p>
+												<div className="flex flex-wrap gap-2">
+													<div className="badge">Default</div>
+													<div className="badge badge-outline">Outline</div>
+													<div className="badge badge-lg">Large</div>
+													<div className="badge badge-sm">Small</div>
+													<div className="badge badge-xs">Extra Small</div>
+												</div>
+											</div>
+											<div>
+												<p className="mb-2 text-base-content/70 text-sm">
+													With Icons
+												</p>
+												<div className="flex flex-wrap gap-2">
+													<div className="badge badge-success gap-2">
+														<Check size={16} />
+														Approved
+													</div>
+													<div className="badge badge-warning gap-2">
+														<Clock size={16} />
+														Pending
+													</div>
+													<div className="badge badge-error gap-2">
+														<X size={16} />
+														Rejected
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Avatars */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Avatars</h3>
 										<div className="space-y-4">
 											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													Sizes
 												</p>
 												<div className="flex items-end gap-3">
-													<Avatar src="/avatar-sarah.jpg" size="sm" />
-													<Avatar src="/avatar-mike.jpg" size="md" />
-													<Avatar src="/avatar-emily.jpg" size="lg" />
+													<div className="avatar">
+														<div className="w-8 rounded-full">
+															<img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Avatar" />
+														</div>
+													</div>
+													<div className="avatar">
+														<div className="w-12 rounded-full">
+															<img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Avatar" />
+														</div>
+													</div>
+													<div className="avatar">
+														<div className="w-16 rounded-full">
+															<img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Avatar" />
+														</div>
+													</div>
 												</div>
 											</div>
 											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													Avatar Group
 												</p>
-												<AvatarGroup max={3}>
-													<Avatar src="/avatar-sarah.jpg" />
-													<Avatar src="/avatar-mike.jpg" />
-													<Avatar src="/avatar-emily.jpg" />
-													<Avatar src="/avatar-john.jpg" />
-													<Avatar src="/avatar-jane.jpg" />
-												</AvatarGroup>
+												<div className="avatar-group -space-x-6 rtl:space-x-reverse">
+													<div className="avatar">
+														<div className="w-12">
+															<img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Avatar" />
+														</div>
+													</div>
+													<div className="avatar">
+														<div className="w-12">
+															<img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Avatar" />
+														</div>
+													</div>
+													<div className="avatar">
+														<div className="w-12">
+															<img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" alt="Avatar" />
+														</div>
+													</div>
+													<div className="avatar placeholder">
+														<div className="w-12 bg-neutral text-neutral-content">
+															<span>+2</span>
+														</div>
+													</div>
+												</div>
 											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Progress */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Progress</h3>
 										<div className="max-w-md space-y-4">
-											<Progress value={30} className="mb-2" />
-											<Progress value={60} color="success" className="mb-2" />
-											<Progress value={80} color="warning" className="mb-2" />
-											<Progress value={95} color="danger" className="mb-2" />
-											<Progress
-												isIndeterminate
-												color="primary"
-												className="mb-2"
-											/>
+											<progress className="progress w-full" value="30" max="100"></progress>
+											<progress className="progress progress-success w-full" value="60" max="100"></progress>
+											<progress className="progress progress-warning w-full" value="80" max="100"></progress>
+											<progress className="progress progress-error w-full" value="95" max="100"></progress>
+											<progress className="progress progress-primary w-full"></progress>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
-									{/* Tooltips & Popovers */}
+									{/* Tooltips */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">
-											Tooltips & Popovers
+											Tooltips
 										</h3>
 										<div className="flex gap-4">
-											<Tooltip content="This is a tooltip">
-												<Button variant="flat">Hover me</Button>
-											</Tooltip>
-											<Popover placement="bottom">
-												<PopoverTrigger>
-													<Button variant="flat">Click me</Button>
-												</PopoverTrigger>
-												<PopoverContent>
-													<div className="px-1 py-2">
-														<div className="font-bold text-small">
-															Popover Content
-														</div>
-														<div className="text-tiny">
-															This is a popover with more content.
-														</div>
-													</div>
-												</PopoverContent>
-											</Popover>
+											<div className="tooltip" data-tip="This is a tooltip">
+												<button className="btn">Hover me</button>
+											</div>
+											<div className="tooltip tooltip-open tooltip-top" data-tip="Always visible">
+												<button className="btn">Always visible</button>
+											</div>
 										</div>
 									</div>
 								</div>
-							</Tab>
+							)}
 
 							{/* Cards & Layout */}
-							<Tab key="cards" title="Cards & Layout">
-								<div className="space-y-8 p-6">
+							{selectedTab === "cards" && (
+								<div className="space-y-8">
 									{/* Cards */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Cards</h3>
 										<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-											<Card>
-												<CardHeader>
-													<h4 className="font-semibold">Default Card</h4>
-												</CardHeader>
-												<CardBody>
-													<p className="text-default-600">
-														This is a basic card with header and body.
-													</p>
-												</CardBody>
-											</Card>
-											<Card shadow="sm">
-												<CardBody>
-													<h4 className="mb-2 font-semibold">
-														Card with Shadow
-													</h4>
-													<p className="text-default-600">
-														This card has a subtle shadow effect.
-													</p>
-												</CardBody>
-											</Card>
-											<Card isHoverable isPressable>
-												<CardBody>
-													<h4 className="mb-2 font-semibold">
-														Interactive Card
-													</h4>
-													<p className="text-default-600">
-														This card is hoverable and pressable.
-													</p>
-												</CardBody>
-											</Card>
+											<div className="card bg-base-100 shadow-xl">
+												<div className="card-body">
+													<h2 className="card-title">Default Card</h2>
+													<p>This is a basic card with header and body.</p>
+												</div>
+											</div>
+											<div className="card bg-base-100 shadow">
+												<div className="card-body">
+													<h2 className="card-title">Card with Shadow</h2>
+													<p>This card has a subtle shadow effect.</p>
+												</div>
+											</div>
+											<div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer">
+												<div className="card-body">
+													<h2 className="card-title">Interactive Card</h2>
+													<p>This card is hoverable and pressable.</p>
+												</div>
+											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Breadcrumbs */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Breadcrumbs</h3>
-										<Breadcrumbs>
-											<BreadcrumbItem startContent={<Home size={16} />}>
-												Home
-											</BreadcrumbItem>
-											<BreadcrumbItem>Assets</BreadcrumbItem>
-											<BreadcrumbItem>Images</BreadcrumbItem>
-											<BreadcrumbItem>Brand Logo</BreadcrumbItem>
-										</Breadcrumbs>
+										<div className="text-sm breadcrumbs">
+											<ul>
+												<li>
+													<a>
+														<Home size={16} />
+														Home
+													</a>
+												</li>
+												<li><a>Assets</a></li>
+												<li><a>Images</a></li>
+												<li>Brand Logo</li>
+											</ul>
+										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
-									{/* Tabs */}
+									{/* Accordion */}
 									<div>
-										<h3 className="mb-4 font-semibold text-lg">Tabs</h3>
-										<Card>
-											<CardBody>
-												<Tabs aria-label="Options">
-													<Tab key="overview" title="Overview">
-														<p className="text-default-600">
-															Overview content goes here.
-														</p>
-													</Tab>
-													<Tab key="details" title="Details">
-														<p className="text-default-600">
-															Details content goes here.
-														</p>
-													</Tab>
-													<Tab key="settings" title="Settings">
-														<p className="text-default-600">
-															Settings content goes here.
-														</p>
-													</Tab>
-												</Tabs>
-											</CardBody>
-										</Card>
-									</div>
-								</div>
-							</Tab>
-
-							{/* Tables & Lists */}
-							<Tab key="tables" title="Tables & Lists">
-								<div className="space-y-8 p-6">
-									{/* Table */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Tables</h3>
-										<Table aria-label="Example table">
-											<TableHeader>
-												<TableColumn>NAME</TableColumn>
-												<TableColumn>TYPE</TableColumn>
-												<TableColumn>SIZE</TableColumn>
-												<TableColumn>STATUS</TableColumn>
-												<TableColumn>ACTIONS</TableColumn>
-											</TableHeader>
-											<TableBody>
-												{tableData.map((item) => (
-													<TableRow key={item.id}>
-														<TableCell>{item.name}</TableCell>
-														<TableCell>{item.type}</TableCell>
-														<TableCell>{item.size}</TableCell>
-														<TableCell>
-															<Chip
-																color={
-																	item.status === "active"
-																		? "success"
-																		: "default"
-																}
-																size="sm"
-															>
-																{item.status}
-															</Chip>
-														</TableCell>
-														<TableCell>
-															<div className="flex gap-2">
-																<Tooltip content="View">
-																	<Button isIconOnly size="sm" variant="light">
-																		<Eye size={16} />
-																	</Button>
-																</Tooltip>
-																<Tooltip content="Edit">
-																	<Button isIconOnly size="sm" variant="light">
-																		<Edit size={16} />
-																	</Button>
-																</Tooltip>
-																<Tooltip content="Delete">
-																	<Button
-																		isIconOnly
-																		size="sm"
-																		variant="light"
-																		color="danger"
-																	>
-																		<Trash size={16} />
-																	</Button>
-																</Tooltip>
-															</div>
-														</TableCell>
-													</TableRow>
-												))}
-											</TableBody>
-										</Table>
-									</div>
-
-									<Divider />
-
-									{/* Pagination */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Pagination</h3>
-										<div className="flex flex-wrap gap-4">
-											<Pagination
-												total={10}
-												page={currentPage}
-												onChange={setCurrentPage}
-											/>
-											<Pagination
-												total={10}
-												page={currentPage}
-												onChange={setCurrentPage}
-												showControls
-											/>
-											<Pagination
-												total={10}
-												page={currentPage}
-												onChange={setCurrentPage}
-												size="sm"
-											/>
+										<h3 className="mb-4 font-semibold text-lg">Accordion</h3>
+										<div className="collapse collapse-arrow bg-base-200">
+											<input type="radio" name="my-accordion-2" defaultChecked />
+											<div className="collapse-title text-xl font-medium">
+												Click to open this one and close others
+											</div>
+											<div className="collapse-content">
+												<p>Overview content goes here.</p>
+											</div>
 										</div>
 									</div>
 								</div>
-							</Tab>
+							)}
 
 							{/* Feedback */}
-							<Tab key="feedback" title="Feedback">
-								<div className="space-y-8 p-6">
+							{selectedTab === "feedback" && (
+								<div className="space-y-8">
 									{/* Modals */}
 									<div>
 										<h3 className="mb-4 font-semibold text-lg">Modals</h3>
-										<Button color="primary" onPress={onOpen}>
+										<button className="btn btn-primary" onClick={onOpen}>
 											Open Modal
-										</Button>
-										<Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-											<ModalContent>
-												{(onClose) => (
-													<>
-														<ModalHeader className="flex flex-col gap-1">
-															Modal Title
-														</ModalHeader>
-														<ModalBody>
-															<p>
-																This is a modal dialog. You can put any content
-																here.
-															</p>
-															<p className="text-default-500 text-small">
-																Modals are perfect for forms, confirmations, or
-																displaying detailed information.
-															</p>
-														</ModalBody>
-														<ModalFooter>
-															<Button
-																color="danger"
-																variant="light"
-																onPress={onClose}
-															>
-																Cancel
-															</Button>
-															<Button color="primary" onPress={onClose}>
-																Action
-															</Button>
-														</ModalFooter>
-													</>
-												)}
-											</ModalContent>
-										</Modal>
+										</button>
+										
+										<dialog className="modal" open={isOpen}>
+											<div className="modal-box">
+												<h3 className="font-bold text-lg">Modal Title</h3>
+												<p className="py-4">
+													This is a modal dialog. You can put any content
+													here.
+												</p>
+												<p className="text-base-content/70 text-sm">
+													Modals are perfect for forms, confirmations, or
+													displaying detailed information.
+												</p>
+												<div className="modal-action">
+													<button className="btn btn-error" onClick={onClose}>
+														Cancel
+													</button>
+													<button className="btn btn-primary" onClick={onClose}>
+														Action
+													</button>
+												</div>
+											</div>
+											<form method="dialog" className="modal-backdrop">
+												<button onClick={onClose}>close</button>
+											</form>
+										</dialog>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Loading States */}
 									<div>
@@ -911,45 +709,32 @@ export default function ShowcasePage() {
 										</h3>
 										<div className="space-y-4">
 											<div>
-												<p className="mb-2 text-default-500 text-small">
-													Spinners
+												<p className="mb-2 text-base-content/70 text-sm">
+													Loading Spinners
 												</p>
 												<div className="flex items-center gap-4">
-													<Spinner size="sm" />
-													<Spinner size="md" />
-													<Spinner size="lg" />
-													<Spinner size="lg" color="success" />
-													<Spinner size="lg" color="warning" />
-													<Spinner size="lg" color="danger" />
+													<span className="loading loading-spinner loading-sm"></span>
+													<span className="loading loading-spinner loading-md"></span>
+													<span className="loading loading-spinner loading-lg"></span>
+													<span className="loading loading-dots loading-lg"></span>
+													<span className="loading loading-ring loading-lg"></span>
 												</div>
 											</div>
 											<div>
-												<p className="mb-2 text-default-500 text-small">
+												<p className="mb-2 text-base-content/70 text-sm">
 													Skeletons
 												</p>
-												<Card className="w-[300px]">
-													<CardBody className="space-y-3">
-														<Skeleton className="rounded-lg">
-															<div className="h-24 rounded-lg bg-default-300"></div>
-														</Skeleton>
-														<div className="space-y-2">
-															<Skeleton className="w-3/5 rounded-lg">
-																<div className="h-3 w-3/5 rounded-lg bg-default-200"></div>
-															</Skeleton>
-															<Skeleton className="w-4/5 rounded-lg">
-																<div className="h-3 w-4/5 rounded-lg bg-default-200"></div>
-															</Skeleton>
-															<Skeleton className="w-2/5 rounded-lg">
-																<div className="h-3 w-2/5 rounded-lg bg-default-300"></div>
-															</Skeleton>
-														</div>
-													</CardBody>
-												</Card>
+												<div className="flex w-52 flex-col gap-4">
+													<div className="skeleton h-32 w-full"></div>
+													<div className="skeleton h-4 w-28"></div>
+													<div className="skeleton h-4 w-full"></div>
+													<div className="skeleton h-4 w-full"></div>
+												</div>
 											</div>
 										</div>
 									</div>
 
-									<Divider />
+									<div className="divider"></div>
 
 									{/* Alert Messages */}
 									<div>
@@ -957,164 +742,29 @@ export default function ShowcasePage() {
 											Alert Messages
 										</h3>
 										<div className="space-y-3">
-											<Card className="border-primary border-l-4">
-												<CardBody>
-													<div className="flex gap-3">
-														<Info className="text-primary" size={20} />
-														<div>
-															<p className="font-semibold text-primary">
-																Information
-															</p>
-															<p className="text-default-600 text-small">
-																This is an informational message.
-															</p>
-														</div>
-													</div>
-												</CardBody>
-											</Card>
-											<Card className="border-success border-l-4">
-												<CardBody>
-													<div className="flex gap-3">
-														<CheckCircle className="text-success" size={20} />
-														<div>
-															<p className="font-semibold text-success">
-																Success
-															</p>
-															<p className="text-default-600 text-small">
-																Your action was completed successfully.
-															</p>
-														</div>
-													</div>
-												</CardBody>
-											</Card>
-											<Card className="border-warning border-l-4">
-												<CardBody>
-													<div className="flex gap-3">
-														<AlertCircle className="text-warning" size={20} />
-														<div>
-															<p className="font-semibold text-warning">
-																Warning
-															</p>
-															<p className="text-default-600 text-small">
-																Please review this important information.
-															</p>
-														</div>
-													</div>
-												</CardBody>
-											</Card>
-											<Card className="border-danger border-l-4">
-												<CardBody>
-													<div className="flex gap-3">
-														<XCircle className="text-danger" size={20} />
-														<div>
-															<p className="font-semibold text-danger">Error</p>
-															<p className="text-default-600 text-small">
-																An error occurred. Please try again.
-															</p>
-														</div>
-													</div>
-												</CardBody>
-											</Card>
-										</div>
-									</div>
-								</div>
-							</Tab>
-
-							{/* Typography */}
-							<Tab key="typography" title="Typography">
-								<div className="space-y-8 p-6">
-									{/* Headings */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Headings</h3>
-										<div className="space-y-2">
-											<h1 className="font-bold text-5xl">Heading 1</h1>
-											<h2 className="font-bold text-4xl">Heading 2</h2>
-											<h3 className="font-bold text-3xl">Heading 3</h3>
-											<h4 className="font-semibold text-2xl">Heading 4</h4>
-											<h5 className="font-semibold text-xl">Heading 5</h5>
-											<h6 className="font-semibold text-lg">Heading 6</h6>
-										</div>
-									</div>
-
-									<Divider />
-
-									{/* Text Styles */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Text Styles</h3>
-										<div className="space-y-2">
-											<p className="text-large">Large text for emphasis</p>
-											<p>Default body text for regular content</p>
-											<p className="text-small">
-												Small text for secondary information
-											</p>
-											<p className="text-tiny">
-												Tiny text for captions and labels
-											</p>
-											<p className="font-bold">Bold text for emphasis</p>
-											<p className="font-semibold">
-												Semibold text for subheadings
-											</p>
-											<p className="italic">
-												Italic text for quotes or emphasis
-											</p>
-											<p className="underline">Underlined text for links</p>
-											<p className="line-through">
-												Strikethrough text for outdated content
-											</p>
-										</div>
-									</div>
-
-									<Divider />
-
-									{/* Colors */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Text Colors</h3>
-										<div className="space-y-2">
-											<p className="text-default-900">Default text color</p>
-											<p className="text-default-600">Secondary text color</p>
-											<p className="text-default-500">Muted text color</p>
-											<p className="text-default-400">Disabled text color</p>
-											<p className="text-primary">Primary brand color</p>
-											<p className="text-secondary">Secondary brand color</p>
-											<p className="text-success">Success state color</p>
-											<p className="text-warning">Warning state color</p>
-											<p className="text-danger">Danger state color</p>
-										</div>
-									</div>
-
-									<Divider />
-
-									{/* Code & Links */}
-									<div>
-										<h3 className="mb-4 font-semibold text-lg">Code & Links</h3>
-										<div className="space-y-3">
-											<p>
-												Inline code: <Code>const brandPortal = "awesome";</Code>
-											</p>
-											<Code className="block p-3">
-												{`// Code block example
-const assets = await assetService.getAssets();
-console.log(assets);`}
-											</Code>
-											<div className="flex gap-4">
-												<Link href="#">Default Link</Link>
-												<Link href="#" color="primary">
-													Primary Link
-												</Link>
-												<Link href="#" color="success">
-													Success Link
-												</Link>
-												<Link href="#" isExternal>
-													External Link <ExternalLink size={16} />
-												</Link>
+											<div role="alert" className="alert alert-info">
+												<Info size={20} />
+												<span>Information: This is an informational message.</span>
+											</div>
+											<div role="alert" className="alert alert-success">
+												<CheckCircle size={20} />
+												<span>Success: Your action was completed successfully.</span>
+											</div>
+											<div role="alert" className="alert alert-warning">
+												<AlertCircle size={20} />
+												<span>Warning: Please review this important information.</span>
+											</div>
+											<div role="alert" className="alert alert-error">
+												<XCircle size={20} />
+												<span>Error: An error occurred. Please try again.</span>
 											</div>
 										</div>
 									</div>
 								</div>
-							</Tab>
-						</Tabs>
-					</CardBody>
-				</Card>
+							)}
+						</div>
+					</div>
+				</div>
 			</div>
 		</AppLayout>
 	);

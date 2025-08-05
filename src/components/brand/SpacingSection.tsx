@@ -227,12 +227,11 @@ export function SpacingSection({
 				</div>
 				<div className="card-body space-y-4">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">System Preset</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="system-preset">System Preset</label>
 							<select 
-								className="select select-bordered"
+								id="system-preset"
+								className="select"
 								value={selectedPreset}
 								onChange={(e) => handlePresetChange(e.target.value)}
 							>
@@ -245,11 +244,10 @@ export function SpacingSection({
 							</select>
 						</div>
 
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Base Unit (px)</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="base-unit">Base Unit (px)</label>
 							<input
+								id="base-unit"
 								type="range"
 								min="2"
 								max="16"
@@ -266,12 +264,11 @@ export function SpacingSection({
 						</div>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">System Description</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="system-description">System Description</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="system-description"
+							className="textarea"
 							placeholder="Describe your spacing system philosophy..."
 							value={spacingRules.description}
 							onChange={(e) => onChange({ ...spacingRules, description: e.target.value })}
@@ -289,16 +286,15 @@ export function SpacingSection({
 				<div className="card-body space-y-4">
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 						{spacingRules.scale.map((size, index) => (
-							<div key={index} className="form-control">
-								<label className="label">
-									<span className="label-text">Token {index + 1}</span>
-								</label>
+							<div key={index} className="w-full">
+								<label className="label" htmlFor={`token-${index + 1}`}>Token {index + 1}</label>
 								<div className="relative">
 									<input
+										id={`token-${index + 1}`}
 										type="number"
 										value={size.toString()}
 										onChange={(e) => handleScaleChange(index, parseInt(e.target.value) || 0)}
-										className="input input-bordered pr-10"
+										className="input pr-10"
 									/>
 									<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/60 text-sm">
 										px
@@ -363,7 +359,7 @@ export function SpacingSection({
 							placeholder="Name (e.g., 'section')"
 							value={customSpacingName}
 							onChange={(e) => setCustomSpacingName(e.target.value)}
-							className="input input-bordered flex-1"
+							className="input flex-1"
 						/>
 						<div className="relative w-32">
 							<input
@@ -371,7 +367,7 @@ export function SpacingSection({
 								placeholder="Value"
 								value={customSpacingValue.toString()}
 								onChange={(e) => setCustomSpacingValue(parseInt(e.target.value) || 0)}
-								className="input input-bordered pr-10 w-full"
+								className="input pr-10 w-full"
 							/>
 							<span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/60 text-sm">
 								px

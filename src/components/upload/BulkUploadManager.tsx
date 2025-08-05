@@ -368,23 +368,23 @@ export default function BulkUploadManager({
 				<div className="card-body">
 					<div className="flex flex-col gap-4 md:flex-row">
 						{/* Search */}
-						<div className="form-control md:w-64">
+						<div className="md:w-64">
 							<div className="relative">
 								<input
 									type="text"
 									placeholder="Search files..."
 									value={searchQuery}
 									onChange={(e) => setSearchQuery(e.target.value)}
-									className="input input-bordered pl-10"
+									className="input pl-10"
 								/>
 								<Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40" />
 							</div>
 						</div>
 
 						{/* Status Filter */}
-						<div className="form-control md:w-48">
+						<div className="md:w-48">
 							<select
-								className="select select-bordered"
+								className="select"
 								value={filterStatus}
 								onChange={(e) => setFilterStatus(e.target.value)}
 							>
@@ -399,9 +399,9 @@ export default function BulkUploadManager({
 						</div>
 
 						{/* Sort */}
-						<div className="form-control md:w-48">
+						<div className="md:w-48">
 							<select
-								className="select select-bordered"
+								className="select"
 								value={sortBy}
 								onChange={(e) => setSortBy(e.target.value)}
 							>
@@ -604,7 +604,7 @@ export default function BulkUploadManager({
 			</div>
 
 			{/* Item Details Modal */}
-			<dialog className={`modal ${isDetailsOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isDetailsOpen}>
 				<div className="modal-box w-11/12 max-w-2xl">
 					<div className="flex justify-between items-center mb-4">
 						<h3 className="font-bold text-xl">File Details</h3>

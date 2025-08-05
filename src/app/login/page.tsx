@@ -48,12 +48,11 @@ export default function LoginPage() {
 					</h2>
 
 					<form onSubmit={handleLogin} className="space-y-4">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Email</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="email-select">Email</label>
 							<select
-								className="select select-bordered w-full"
+								id="email-select"
+								className="select w-full"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								required
@@ -73,7 +72,7 @@ export default function LoginPage() {
 							</div>
 						)}
 
-						<div className="form-control mt-6">
+						<div className="mt-6">
 							<button
 								type="submit"
 								className="btn btn-primary"

@@ -223,14 +223,14 @@ export function MainNavigation({
 	};
 
 	const renderQuickSearch = () => (
-		<dialog className={`modal ${isQuickSearchOpen ? 'modal-open' : ''}`}>
+		<dialog className="modal" open={isQuickSearchOpen}>
 			<div className="modal-box">
 				<h3 className="font-semibold text-lg mb-4">Search</h3>
 				<div className="space-y-4">
 					<div className="relative">
 						<Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 						<input
-							className="input input-bordered w-full pl-10"
+							className="input w-full pl-10"
 							placeholder="Search assets, collections..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
@@ -358,7 +358,7 @@ export function MainNavigation({
 						<input
 							type="text"
 							placeholder="Search..."
-							className="input input-bordered input-sm w-48 xl:w-64 pr-8"
+							className="input input-sm w-48 xl:w-64 pr-8"
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							onKeyDown={(e) => {

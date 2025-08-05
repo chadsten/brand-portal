@@ -301,7 +301,7 @@ export function AssetPerformance({
 		if (!selectedAsset) return null;
 
 		return (
-			<dialog className={`modal ${isDetailModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isDetailModalOpen}>
 				<div className="modal-box w-11/12 max-w-4xl">
 					<div className="flex items-center justify-between mb-4">
 						<div className="flex items-center gap-3">
@@ -504,26 +504,26 @@ export function AssetPerformance({
 			<div className="card bg-base-100 shadow">
 				<div>
 					<div className="flex flex-col gap-4 md:flex-row md:items-center">
-						<div className="form-control md:w-80">
+						<div className="md:w-80">
 							<div className="input-group">
 								<span>
 									<Search size={16} />
 								</span>
 								<input
+									id="asset-search"
 									type="text"
 									placeholder="Search assets..."
-									className="input input-bordered input-sm"
+									className="input input-sm"
 									value={searchQuery}
 									onChange={(e) => onSearchChange?.(e.target.value)}
 								/>
 							</div>
 						</div>
-						<div className="form-control md:w-48">
-							<label className="label">
-								<span className="label-text">Sort by</span>
-							</label>
+						<div className="md:w-48">
+							<label className="label" htmlFor="asset-sort">Sort by</label>
 							<select
-								className="select select-bordered select-sm"
+								id="asset-sort"
+								className="select select-sm"
 								value={sortBy}
 								onChange={(e) => onSortChange?.(e.target.value)}
 							>
@@ -534,12 +534,11 @@ export function AssetPerformance({
 								))}
 							</select>
 						</div>
-						<div className="form-control md:w-48">
-							<label className="label">
-								<span className="label-text">Filter by type</span>
-							</label>
+						<div className="md:w-48">
+							<label className="label" htmlFor="asset-filter">Filter by type</label>
 							<select
-								className="select select-bordered select-sm"
+								id="asset-filter"
+								className="select select-sm"
 								value={filterBy}
 								onChange={(e) => onFilterChange?.(e.target.value)}
 							>
@@ -662,19 +661,19 @@ export function AssetPerformance({
 
 			{/* Pagination */}
 			<div className="flex justify-center">
-				<div className="btn-group">
+				<div className="join">
 					<button 
-						className="btn btn-sm" 
+						className="btn btn-sm join-item" 
 						onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
 						disabled={currentPage === 1}
 					>
 						«
 					</button>
-					<button className="btn btn-sm btn-active">
+					<button className="btn btn-sm join-item btn-active">
 						Page {currentPage}
 					</button>
 					<button 
-						className="btn btn-sm" 
+						className="btn btn-sm join-item" 
 						onClick={() => setCurrentPage(Math.min(Math.ceil(MOCK_ASSETS.length / pageSize), currentPage + 1))}
 						disabled={currentPage === Math.ceil(MOCK_ASSETS.length / pageSize)}
 					>

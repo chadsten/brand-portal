@@ -611,3 +611,105 @@ export interface UsageAnalytics {
 	};
 	sessionId: string;
 }
+
+// AssetDetailModal specific types
+export interface AssetDetailData {
+	id: string;
+	title: string;
+	description?: string;
+	fileName: string;
+	fileType: string;
+	mimeType: string;
+	fileSize: number;
+	organizationId: string;
+	thumbnailKey?: string;
+	processingStatus: "pending" | "processing" | "completed" | "failed";
+	tags?: string[];
+	createdAt: Date;
+	updatedAt: Date;
+	uploader: {
+		id: string;
+		name: string;
+		email?: string;
+		image?: string;
+	};
+}
+
+export interface AssetMetadata {
+	id: string;
+	assetId: string;
+	metadata: {
+		width?: number;
+		height?: number;
+		duration?: number;
+		codec?: string;
+		bitrate?: number;
+		format?: string;
+		colorProfile?: string;
+		[key: string]: unknown;
+	};
+	extractedAt: Date;
+}
+
+export interface AssetVersion {
+	id: string;
+	assetId: string;
+	versionNumber: number;
+	fileName: string;
+	fileSize: number;
+	mimeType: string;
+	changeLog?: string;
+	createdAt: Date;
+	createdBy: string;
+	isActive: boolean;
+}
+
+export interface AssetActivity {
+	id: string;
+	assetId: string;
+	action: string;
+	user: {
+		id: string;
+		name: string;
+		email?: string;
+		image?: string;
+	};
+	metadata?: Record<string, unknown>;
+	createdAt: Date;
+}
+
+export interface AssetCollection {
+	id: string;
+	name: string;
+	description?: string;
+	icon?: string;
+	color?: string;
+	isPublic: boolean;
+	createdAt: Date;
+	createdBy: string;
+	assetCount?: number;
+}
+
+export interface AssetCollectionsResponse {
+	collections: AssetCollection[];
+}
+
+export interface ThumbnailGenerationProgress {
+	progress: number;
+	message: string;
+	stage: "download" | "process" | "upload" | "complete" | "error";
+}
+
+export interface ThumbnailGenerationOptions {
+	organizationId: string;
+	width: number;
+	height: number;
+	quality: number;
+	onProgress?: (progress: number, message?: string) => void;
+}
+
+export interface ThumbnailGenerationResult {
+	success: boolean;
+	error?: string;
+	thumbnailUrl?: string;
+}

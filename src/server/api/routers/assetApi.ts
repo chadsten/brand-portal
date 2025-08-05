@@ -91,8 +91,11 @@ const searchCollectionsSchema = z.object({
 		.enum(["name", "createdAt", "updatedAt", "assetCount"])
 		.default("createdAt"),
 	sortOrder: z.enum(["asc", "desc"]).default("desc"),
-	limit: z.number().min(1).max(100).default(20),
-	offset: z.number().min(0).default(0),
+	page: z.number().min(1).default(1),
+	pageSize: z.number().min(1).max(100).default(25),
+	// Legacy support for offset-based queries
+	limit: z.number().min(1).max(100).optional(),
+	offset: z.number().min(0).optional(),
 });
 
 const shareCollectionSchema = z.object({

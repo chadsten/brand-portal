@@ -375,12 +375,11 @@ export function ThemeSettings({ onClose }: ThemeSettingsProps) {
 							</div>
 							<div className="card-body">
 								<div className="space-y-4">
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Theme</span>
-										</label>
+									<div>
+										<label className="label" htmlFor="theme-select">Theme</label>
 										<select
-											className="select select-bordered w-full"
+											id="theme-select"
+											className="select w-full"
 											value={theme}
 											onChange={(e) => setTheme(e.target.value as any)}
 										>
@@ -475,7 +474,7 @@ export function ThemeSettings({ onClose }: ThemeSettingsProps) {
 													/>
 													<input
 														type="text"
-														className="input input-bordered input-sm w-24"
+														className="input input-sm w-24"
 														value={color.value}
 														onChange={(e) =>
 															handleColorChange(
@@ -584,7 +583,7 @@ export function ThemeSettings({ onClose }: ThemeSettingsProps) {
 												</div>
 												<input
 													type="text"
-													className="input input-bordered input-sm w-24"
+													className="input input-sm w-24"
 													value={value}
 													onChange={(e) =>
 														handleBorderRadiusChange(
@@ -630,7 +629,7 @@ export function ThemeSettings({ onClose }: ThemeSettingsProps) {
 								Paste your theme configuration JSON below:
 							</p>
 							<textarea
-								className="textarea textarea-bordered h-32 w-full"
+								className="textarea h-32 w-full"
 								placeholder='{"theme": "dark", "config": {...}}'
 								value={importData}
 								onChange={(e) => setImportData(e.target.value)}
@@ -684,7 +683,7 @@ export function ThemeSettings({ onClose }: ThemeSettingsProps) {
 								Copy the configuration below or download as a file:
 							</p>
 							<textarea
-								className="textarea textarea-bordered h-32 w-full"
+								className="textarea h-32 w-full"
 								readOnly
 								value={JSON.stringify({ theme, config: customConfig }, null, 2)}
 								onClick={(e) => (e.target as HTMLTextAreaElement).select()}

@@ -260,12 +260,11 @@ export function TypographySection({
 				</div>
 				<div className="card-body space-y-4">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">Scale Type</span>
-							</label>
+						<div className="w-full">
+							<label className="label" htmlFor="scale-type">Scale Type</label>
 							<select
-								className="select select-bordered"
+								id="scale-type"
+								className="select"
 								value={selectedScale}
 								onChange={(e) => setSelectedScale(e.target.value)}
 							>
@@ -334,12 +333,11 @@ export function TypographySection({
 					<h3 className="font-semibold text-lg">Usage Guidelines</h3>
 				</div>
 				<div className="card-body space-y-4">
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Heading Guidelines</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="heading-guidelines">Heading Guidelines</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="heading-guidelines"
+							className="textarea"
 							placeholder="Specify rules for headings (H1-H6)..."
 							value={typographyRules.headings || ""}
 							onChange={(e) => updateTypographyRules("headings", e.target.value)}
@@ -347,12 +345,11 @@ export function TypographySection({
 						/>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Body Text Guidelines</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="body-text-guidelines">Body Text Guidelines</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="body-text-guidelines"
+							className="textarea"
 							placeholder="Specify rules for body text, paragraphs, etc..."
 							value={typographyRules.body || ""}
 							onChange={(e) => updateTypographyRules("body", e.target.value)}
@@ -360,12 +357,11 @@ export function TypographySection({
 						/>
 					</div>
 
-					<div className="form-control">
-						<label className="label">
-							<span className="label-text">Special Typography</span>
-						</label>
+					<div className="w-full">
+						<label className="label" htmlFor="special-typography">Special Typography</label>
 						<textarea
-							className="textarea textarea-bordered"
+							id="special-typography"
+							className="textarea"
 							placeholder="Rules for captions, labels, quotes, etc..."
 							value={typographyRules.special || ""}
 							onChange={(e) => updateTypographyRules("special", e.target.value)}
@@ -376,7 +372,7 @@ export function TypographySection({
 			</div>
 
 			{/* Font Modal */}
-			<dialog className={`modal ${isFontModalOpen ? 'modal-open' : ''}`}>
+			<dialog className="modal" open={isFontModalOpen}>
 				<div className="modal-box w-11/12 max-w-2xl">
 					{editingFont && (
 						<>
@@ -386,12 +382,11 @@ export function TypographySection({
 							</div>
 							<div className="modal-body space-y-4">
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Font Name</span>
-										</label>
+									<div className="w-full">
+										<label className="label" htmlFor="font-name">Font Name</label>
 										<input
-											className="input input-bordered"
+											id="font-name"
+											className="input"
 											placeholder="e.g., Primary Sans"
 											value={editingFont.name}
 											onChange={(e) =>
@@ -399,12 +394,11 @@ export function TypographySection({
 											}
 										/>
 									</div>
-									<div className="form-control">
-										<label className="label">
-											<span className="label-text">Font Family</span>
-										</label>
+									<div className="w-full">
+										<label className="label" htmlFor="font-family">Font Family</label>
 										<input
-											className="input input-bordered"
+											id="font-family"
+											className="input"
 											placeholder="e.g., Inter, Helvetica"
 											value={editingFont.family}
 											onChange={(e) =>
@@ -414,12 +408,11 @@ export function TypographySection({
 									</div>
 								</div>
 
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">Usage Description</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="font-usage">Usage Description</label>
 									<textarea
-										className="textarea textarea-bordered"
+										id="font-usage"
+										className="textarea"
 										placeholder="Describe when and how to use this font..."
 										value={editingFont.usage}
 										onChange={(e) =>
@@ -505,12 +498,11 @@ export function TypographySection({
 								</div>
 
 								{/* Fallback Fonts */}
-								<div className="form-control">
-									<label className="label">
-										<span className="label-text">Fallback Fonts</span>
-									</label>
+								<div className="w-full">
+									<label className="label" htmlFor="fallback-fonts">Fallback Fonts</label>
 									<input
-										className="input input-bordered"
+										id="fallback-fonts"
+										className="input"
 										placeholder="sans-serif, Arial, Helvetica"
 										value={editingFont.fallbacks.join(", ")}
 										onChange={(e) =>
@@ -531,12 +523,11 @@ export function TypographySection({
 										<h4 className="font-medium">Web Font Settings</h4>
 									</div>
 									<div className="card-body space-y-3">
-										<div className="form-control">
-											<label className="label">
-												<span className="label-text">Font Provider</span>
-											</label>
+										<div className="w-full">
+											<label className="label" htmlFor="font-provider">Font Provider</label>
 											<select
-												className="select select-bordered"
+												id="font-provider"
+												className="select"
 												value={editingFont.webFont?.provider || ""}
 												onChange={(e) => {
 													setEditingFont({
@@ -554,12 +545,11 @@ export function TypographySection({
 										</div>
 
 										{editingFont.webFont?.provider === "custom" && (
-											<div className="form-control">
-												<label className="label">
-													<span className="label-text">Font URL</span>
-												</label>
+											<div className="w-full">
+												<label className="label" htmlFor="font-url">Font URL</label>
 												<input
-													className="input input-bordered"
+													id="font-url"
+													className="input"
 													placeholder="https://..."
 													value={editingFont.webFont?.url || ""}
 													onChange={(e) =>

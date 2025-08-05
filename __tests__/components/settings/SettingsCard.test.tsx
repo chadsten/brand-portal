@@ -11,11 +11,12 @@ jest.mock('lucide-react', () => ({
   Palette: () => <div data-testid="palette-icon" />,
 }));
 
-// Mock @heroui/react components
-jest.mock('@heroui/react', () => ({
+// Mock DaisyUI components (no library imports needed as DaisyUI uses pure CSS classes)
+// These mocks simulate the expected HTML structure with DaisyUI classes
+const mockDaisyUIComponents = {
   Card: ({ children, className, isPressable, onPress }: any) => (
     <div 
-      className={className} 
+      className={`card ${className || ''}`}
       onClick={isPressable ? onPress : undefined}
       role={isPressable ? "button" : undefined}
       tabIndex={isPressable ? 0 : undefined}
@@ -24,43 +25,37 @@ jest.mock('@heroui/react', () => ({
     </div>
   ),
   CardBody: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
-  ),
-  CardHeader: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
-  ),
-  CardFooter: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
+    <div className={`card-body ${className || ''}`}>{children}</div>
   ),
   Button: ({ children, onPress, startContent, variant, size, color }: any) => (
     <button 
-      onClick={onPress} 
-      data-variant={variant} 
-      data-size={size}
-      data-color={color}
+      className={`btn ${variant ? `btn-${variant}` : ''} ${size ? `btn-${size}` : ''} ${color ? `btn-${color}` : ''}`}
+      onClick={onPress}
     >
       {startContent}
       {children}
     </button>
   ),
   Switch: ({ isSelected, onValueChange, children }: any) => (
-    <label>
+    <label className="label cursor-pointer">
       <input
         type="checkbox"
+        className="toggle"
         checked={isSelected}
         onChange={(e) => onValueChange && onValueChange(e.target.checked)}
       />
-      {children}
+      <span className="label-text">{children}</span>
     </label>
   ),
   Select: ({ children, label, placeholder, onSelectionChange, selectedKeys }: any) => (
-    <div>
-      <label>{label}</label>
+    <div className="form-control">
+      {label && <label className="label"><span className="label-text">{label}</span></label>}
       <select 
+        className="select select-bordered"
         onChange={(e) => onSelectionChange && onSelectionChange(new Set([e.target.value]))}
         value={Array.from(selectedKeys || [])[0] || ''}
       >
-        <option value="">{placeholder}</option>
+        <option value="" disabled>{placeholder}</option>
         {children}
       </select>
     </div>
@@ -69,9 +64,10 @@ jest.mock('@heroui/react', () => ({
     <option value={key}>{children}</option>
   ),
   Input: ({ label, placeholder, value, onValueChange, type }: any) => (
-    <div>
-      {label && <label>{label}</label>}
+    <div className="form-control">
+      {label && <label className="label"><span className="label-text">{label}</span></label>}
       <input
+        className="input input-bordered"
         type={type || 'text'}
         placeholder={placeholder}
         value={value || ''}
@@ -79,8 +75,18 @@ jest.mock('@heroui/react', () => ({
       />
     </div>
   ),
-  Divider: () => <hr />,
-}));
+  Divider: () => <div className="divider" />,
+};
+
+// Make components available globally for the test
+global.Card = mockDaisyUIComponents.Card;
+global.CardBody = mockDaisyUIComponents.CardBody;
+global.Button = mockDaisyUIComponents.Button;
+global.Switch = mockDaisyUIComponents.Switch;
+global.Select = mockDaisyUIComponents.Select;
+global.SelectItem = mockDaisyUIComponents.SelectItem;
+global.Input = mockDaisyUIComponents.Input;
+global.Divider = mockDaisyUIComponents.Divider;
 
 describe('SettingsCard', () => {
   const defaultProps = {
@@ -155,7 +161,7 @@ describe('SettingsCard', () => {
       <SettingsCard 
         {...defaultProps}
         actions={
-          <Button color="primary">Save</Button>
+          <button className="btn btn-primary">Save</button>
         }
       />
     );

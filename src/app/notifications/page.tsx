@@ -399,7 +399,7 @@ export default function NotificationsPage() {
 					<div className="relative sm:w-80">
 						<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 						<input
-							className="input input-bordered w-full pl-10"
+							className="input w-full pl-10"
 							placeholder="Search notifications..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
@@ -408,7 +408,7 @@ export default function NotificationsPage() {
 					<div className="relative sm:w-48">
 						<Filter size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60" />
 						<select
-							className="select select-bordered w-full pl-10"
+							className="select w-full pl-10"
 							value={filterBy}
 							onChange={(e) => setFilterBy(e.target.value)}
 						>
@@ -422,7 +422,7 @@ export default function NotificationsPage() {
 						</select>
 					</div>
 					<select
-						className="select select-bordered sm:w-40"
+						className="select sm:w-40"
 						value={sortBy}
 						onChange={(e) => setSortBy(e.target.value)}
 					>

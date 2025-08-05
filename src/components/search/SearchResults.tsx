@@ -471,12 +471,13 @@ export function SearchResults({
 
 						<div className="flex items-center gap-2">
 							{/* Sort */}
-							<div className="form-control w-48">
-								<label className="label">
+							<div className="w-48">
+								<label className="label" htmlFor="search-sort">
 									<span className="label-text text-sm">Sort by</span>
 								</label>
 								<select
-									className="select select-bordered select-sm"
+									id="search-sort"
+									className="select select-sm"
 									value={sortBy}
 									onChange={(e) => onSortChange(e.target.value)}
 								>
@@ -553,7 +554,8 @@ export function SearchResults({
 						<div className="flex items-center gap-2">
 							<span className="text-sm">Items per page:</span>
 							<select
-								className="select select-bordered select-sm w-20"
+								id="page-size"
+								className="select select-sm w-20"
 								value={String(pageSize)}
 								onChange={(e) => onPageSizeChange(Number(e.target.value))}
 							>
@@ -565,19 +567,19 @@ export function SearchResults({
 							</select>
 						</div>
 
-						<div className="btn-group">
+						<div className="join">
 							<button
-								className="btn btn-sm"
+								className="btn btn-sm join-item"
 								onClick={() => onPageChange(Math.max(1, currentPage - 1))}
 								disabled={currentPage === 1}
 							>
 								«
 							</button>
-							<button className="btn btn-sm btn-active">
+							<button className="btn btn-sm btn-active join-item">
 								Page {currentPage}
 							</button>
 							<button
-								className="btn btn-sm"
+								className="btn btn-sm join-item"
 								onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
 								disabled={currentPage === totalPages}
 							>

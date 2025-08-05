@@ -603,11 +603,10 @@ export default function ProfilePage() {
 										<div className="space-y-6">
 											<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 												<div>
-													<label className="label">
-														<span className="label-text">Full Name</span>
-													</label>
+													<label className="label" htmlFor="full-name">Full Name</label>
 													<input
-														className="input input-bordered w-full"
+														id="full-name"
+														className="input w-full"
 														value={profile.name}
 														onChange={(e) =>
 															setProfile((prev) => ({
@@ -618,11 +617,10 @@ export default function ProfilePage() {
 													/>
 												</div>
 												<div>
-													<label className="label">
-														<span className="label-text">Email</span>
-													</label>
+													<label className="label" htmlFor="email">Email</label>
 													<input
-														className="input input-bordered w-full"
+														id="email"
+														className="input w-full"
 														value={profile.email}
 														onChange={(e) =>
 															setProfile((prev) => ({
@@ -633,11 +631,10 @@ export default function ProfilePage() {
 													/>
 												</div>
 												<div>
-													<label className="label">
-														<span className="label-text">Phone</span>
-													</label>
+													<label className="label" htmlFor="phone">Phone</label>
 													<input
-														className="input input-bordered w-full"
+														id="phone"
+														className="input w-full"
 														value={profile.phone}
 														onChange={(e) =>
 															setProfile((prev) => ({
@@ -648,11 +645,10 @@ export default function ProfilePage() {
 													/>
 												</div>
 												<div>
-													<label className="label">
-														<span className="label-text">Location</span>
-													</label>
+													<label className="label" htmlFor="location">Location</label>
 													<input
-														className="input input-bordered w-full"
+														id="location"
+														className="input w-full"
 														value={profile.location}
 														onChange={(e) =>
 															setProfile((prev) => ({
@@ -663,11 +659,10 @@ export default function ProfilePage() {
 													/>
 												</div>
 												<div className="md:col-span-2">
-													<label className="label">
-														<span className="label-text">Website</span>
-													</label>
+													<label className="label" htmlFor="website">Website</label>
 													<input
-														className="input input-bordered w-full"
+														id="website"
+														className="input w-full"
 														value={profile.website}
 														onChange={(e) =>
 															setProfile((prev) => ({
@@ -679,11 +674,10 @@ export default function ProfilePage() {
 												</div>
 											</div>
 											<div>
-												<label className="label">
-													<span className="label-text">Bio</span>
-												</label>
+												<label className="label" htmlFor="bio">Bio</label>
 												<textarea
-													className="textarea textarea-bordered w-full h-24"
+													id="bio"
+													className="textarea w-full h-24"
 													value={profile.bio}
 													onChange={(e) =>
 														setProfile((prev) => ({

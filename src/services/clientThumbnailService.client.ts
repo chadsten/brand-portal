@@ -1,18 +1,9 @@
 /**
- * Client-side document thumbnail renderers
- * Uses Canvas API for 100% web-based thumbnail generation
- * No server dependencies required
+ * Client-only thumbnail service wrapper
+ * This file should only be imported using dynamic imports on the client side
  */
 
-import * as pdfjsLib from 'pdfjs-dist';
-import mammoth from 'mammoth';
-import html2canvas from 'html2canvas';
-import * as XLSX from 'xlsx';
-
-// Configure PDF.js worker
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-}
+'use client';
 
 export interface ThumbnailRenderOptions {
   width?: number;
@@ -28,13 +19,48 @@ const DEFAULT_OPTIONS: Required<ThumbnailRenderOptions> = {
   format: 'webp'
 };
 
-/**
- * Render PDF thumbnail using PDF.js
- */
+let isInitialized = false;
+let pdfjsLib: any = null;
+let mammoth: any = null;
+let html2canvas: any = null;
+let XLSX: any = null;
+
+async function initializeLibraries() {
+  if (typeof window === 'undefined') {
+    throw new Error('Client thumbnail renderers can only be used in browser environment');
+  }
+
+  if (isInitialized) return;
+
+  try {
+    // Load PDF.js
+    const pdfModule = await import('pdfjs-dist');
+    pdfjsLib = pdfModule;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+
+    // Load Mammoth for Word documents
+    const mammothModule = await import('mammoth');
+    mammoth = mammothModule.default || mammothModule;
+
+    // Load html2canvas
+    const canvasModule = await import('html2canvas');
+    html2canvas = canvasModule.default || canvasModule;
+
+    // Load XLSX
+    XLSX = await import('xlsx');
+
+    isInitialized = true;
+  } catch (error) {
+    console.error('Failed to initialize thumbnail libraries:', error);
+    throw error;
+  }
+}
+
 export async function renderPdfThumbnail(
   pdfBlob: Blob,
   options: ThumbnailRenderOptions = {}
 ): Promise<Blob> {
+  await initializeLibraries();
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   try {
@@ -46,9 +72,8 @@ export async function renderPdfThumbnail(
       useSystemFonts: true
     }).promise;
     
-    const page = await pdf.getPage(1); // First page
+    const page = await pdf.getPage(1);
     
-    // Calculate scale to fit within desired dimensions
     const viewport = page.getViewport({ scale: 1.0 });
     const scaleX = opts.width / viewport.width;
     const scaleY = opts.height / viewport.height;
@@ -56,7 +81,6 @@ export async function renderPdfThumbnail(
     
     const scaledViewport = page.getViewport({ scale });
     
-    // Create canvas
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Failed to get canvas context');
@@ -64,11 +88,9 @@ export async function renderPdfThumbnail(
     canvas.width = scaledViewport.width;
     canvas.height = scaledViewport.height;
     
-    // White background
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Render PDF page
     await page.render({
       canvasContext: context,
       viewport: scaledViewport,
@@ -87,20 +109,17 @@ export async function renderPdfThumbnail(
   }
 }
 
-/**
- * Render Word document thumbnail using mammoth.js + html2canvas
- */
 export async function renderWordThumbnail(
   docBlob: Blob,
   options: ThumbnailRenderOptions = {}
 ): Promise<Blob> {
+  await initializeLibraries();
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   try {
     const arrayBuffer = await docBlob.arrayBuffer();
     const result = await mammoth.convertToHtml({ arrayBuffer });
     
-    // Create temporary container
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = result.value;
     tempDiv.style.cssText = `
@@ -147,121 +166,6 @@ export async function renderWordThumbnail(
   }
 }
 
-/**
- * Render Excel spreadsheet thumbnail using xlsx + Canvas
- */
-export async function renderExcelThumbnail(
-  excelBlob: Blob,
-  options: ThumbnailRenderOptions = {}
-): Promise<Blob> {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
-  
-  try {
-    const arrayBuffer = await excelBlob.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    
-    // Get first worksheet
-    const firstSheetName = workbook.SheetNames[0];
-    if (!firstSheetName) throw new Error('No worksheets found');
-    
-    const worksheet = workbook.Sheets[firstSheetName];
-    if (!worksheet) throw new Error('Worksheet not found');
-    
-    // Convert to array of arrays
-    const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { 
-      header: 1,
-      defval: '',
-      raw: false 
-    });
-    
-    if (jsonData.length === 0) throw new Error('Empty worksheet');
-    
-    // Create canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = opts.width;
-    canvas.height = opts.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Failed to get canvas context');
-    
-    // White background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Calculate cell dimensions
-    const maxCols = Math.min(8, Math.max(...jsonData.map(row => row.length)));
-    const maxRows = Math.min(25, jsonData.length);
-    const cellWidth = (opts.width - 40) / maxCols;
-    const cellHeight = 25;
-    const startX = 20;
-    const startY = 40;
-    
-    // Set font
-    ctx.font = '11px Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    
-    // Draw title
-    ctx.fillStyle = '#333333';
-    ctx.font = 'bold 14px Arial, sans-serif';
-    ctx.fillText(`Sheet: ${firstSheetName}`, startX, 25);
-    ctx.font = '11px Arial, sans-serif';
-    
-    // Draw grid and data
-    for (let row = 0; row < maxRows; row++) {
-      for (let col = 0; col < maxCols; col++) {
-        const x = startX + col * cellWidth;
-        const y = startY + row * cellHeight;
-        
-        // Draw cell border
-        ctx.strokeStyle = '#cccccc';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, cellWidth, cellHeight);
-        
-        // Header row styling
-        if (row === 0) {
-          ctx.fillStyle = '#f0f0f0';
-          ctx.fillRect(x + 1, y + 1, cellWidth - 2, cellHeight - 2);
-          ctx.fillStyle = '#333333';
-          ctx.font = 'bold 11px Arial, sans-serif';
-        } else {
-          ctx.fillStyle = '#000000';
-          ctx.font = '11px Arial, sans-serif';
-        }
-        
-        // Draw cell content
-        const cellValue = (jsonData[row] && jsonData[row][col] !== undefined) ? 
-          jsonData[row][col]?.toString() || '' : '';
-        const truncatedValue = cellValue.length > 12 ? cellValue.substring(0, 12) + '...' : cellValue;
-        
-        ctx.fillText(truncatedValue, x + 5, y + cellHeight / 2);
-      }
-    }
-    
-    // Add summary info
-    ctx.fillStyle = '#666666';
-    ctx.font = '10px Arial, sans-serif';
-    const maxColumns = jsonData.length > 0 ? Math.max(...jsonData.map(row => row?.length || 0)) : 0;
-    ctx.fillText(
-      `${jsonData.length} rows × ${maxColumns} columns`,
-      startX,
-      opts.height - 15
-    );
-    
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob')),
-        `image/${opts.format}`,
-        opts.quality
-      );
-    });
-  } catch (error) {
-    throw new Error(`Excel rendering failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/**
- * Render text file thumbnail using Canvas text API
- */
 export async function renderTextThumbnail(
   textBlob: Blob,
   options: ThumbnailRenderOptions = {}
@@ -270,35 +174,26 @@ export async function renderTextThumbnail(
   
   try {
     const text = await textBlob.text();
-    const previewText = text.substring(0, 3000); // First 3000 chars
+    const previewText = text.substring(0, 3000);
     
-    // Create canvas
     const canvas = document.createElement('canvas');
     canvas.width = opts.width;
     canvas.height = opts.height;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Failed to get canvas context');
     
-    // White background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Text styling
+    ctx.fillStyle = '#666666';
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillText('Text Document Preview', 20, 20);
+    
     ctx.fillStyle = '#333333';
     ctx.font = '12px "Courier New", "Consolas", monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     
-    // Add header
-    ctx.fillStyle = '#666666';
-    ctx.font = 'bold 14px Arial, sans-serif';
-    ctx.fillText('Text Document Preview', 20, 20);
-    
-    // Reset for content
-    ctx.fillStyle = '#333333';
-    ctx.font = '12px "Courier New", "Consolas", monospace';
-    
-    // Wrap and draw text
     const lines = wrapText(ctx, previewText, opts.width - 40);
     const lineHeight = 16;
     const maxLines = Math.floor((opts.height - 60) / lineHeight);
@@ -307,7 +202,6 @@ export async function renderTextThumbnail(
       ctx.fillText(lines[i], 20, 50 + i * lineHeight);
     }
     
-    // Add truncation indicator if needed
     if (lines.length > maxLines || text.length > 3000) {
       ctx.fillStyle = '#999999';
       ctx.font = 'italic 11px Arial, sans-serif';
@@ -326,16 +220,12 @@ export async function renderTextThumbnail(
   }
 }
 
-/**
- * Utility function to wrap text for canvas rendering
- */
 function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let currentLine = '';
   
   for (const word of words) {
-    // Handle line breaks in the original text
     if (word.includes('\n')) {
       const parts = word.split('\n');
       for (let i = 0; i < parts.length; i++) {
@@ -374,16 +264,11 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines;
 }
 
-/**
- * Determine the appropriate renderer based on MIME type
- */
-export function getRendererForMimeType(mimeType: string): keyof typeof RENDERERS | null {
-  const mimeMap: Record<string, keyof typeof RENDERERS> = {
+export function getRendererForMimeType(mimeType: string): 'pdf' | 'word' | 'text' | null {
+  const mimeMap: Record<string, 'pdf' | 'word' | 'text'> = {
     'application/pdf': 'pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'word',
     'application/msword': 'word',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'excel',
-    'application/vnd.ms-excel': 'excel',
     'text/plain': 'text',
     'text/csv': 'text',
     'text/html': 'text',
@@ -398,9 +283,8 @@ export function getRendererForMimeType(mimeType: string): keyof typeof RENDERERS
   return mimeMap[mimeType] || null;
 }
 
-export const RENDERERS = {
+export const CLIENT_RENDERERS = {
   pdf: renderPdfThumbnail,
   word: renderWordThumbnail,
-  excel: renderExcelThumbnail,
   text: renderTextThumbnail
 } as const;

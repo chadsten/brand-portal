@@ -275,31 +275,28 @@ export function CollectionDetailModal({
 				</div>
 
 				<div className="px-0">
-					<div className="tabs tabs-boxed w-full px-6 mb-6">
-						<input
-							type="radio"
-							name="detail_tabs"
-							className="tab"
-							aria-label="Assets"
-							checked={activeTab === "assets"}
-							onChange={() => setActiveTab("assets")}
-						/>
-						<input
-							type="radio"
-							name="detail_tabs"
-							className="tab"
-							aria-label="Information"
-							checked={activeTab === "info"}
-							onChange={() => setActiveTab("info")}
-						/>
-						<input
-							type="radio"
-							name="detail_tabs"
-							className="tab"
-							aria-label="Activity"
-							checked={activeTab === "activity"}
-							onChange={() => setActiveTab("activity")}
-						/>
+					<div role="tablist" className="tabs tabs-box w-full px-6 mb-6">
+						<button
+							role="tab"
+							className={`tab ${activeTab === "assets" ? "tab-active" : ""}`}
+							onClick={() => setActiveTab("assets")}
+						>
+							Assets
+						</button>
+						<button
+							role="tab"
+							className={`tab ${activeTab === "info" ? "tab-active" : ""}`}
+							onClick={() => setActiveTab("info")}
+						>
+							Information
+						</button>
+						<button
+							role="tab"
+							className={`tab ${activeTab === "activity" ? "tab-active" : ""}`}
+							onClick={() => setActiveTab("activity")}
+						>
+							Activity
+						</button>
 					</div>
 					
 					<div className="tab-content">
@@ -308,26 +305,27 @@ export function CollectionDetailModal({
 								{/* Assets Header */}
 								<div className="flex items-center justify-between">
 									<div className="flex items-center gap-4">
-										<div className="form-control">
+										<div>
 											<div className="relative">
 												<Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/40" />
 												<input
-													className="input input-bordered input-sm w-64 pl-10"
+													id="asset-search"
+													className="input input-sm w-64 pl-10"
 													placeholder="Search assets..."
 													value={assetSearchQuery}
 													onChange={(e) => setAssetSearchQuery(e.target.value)}
 												/>
 											</div>
 										</div>
-										<div className="btn-group">
+										<div className="join">
 											<button
-												className={`btn btn-sm ${assetViewMode === "grid" ? "btn-active" : ""}`}
+												className={`btn btn-sm join-item ${assetViewMode === "grid" ? "btn-active" : ""}`}
 												onClick={() => setAssetViewMode("grid")}
 											>
 												<Grid size={16} />
 											</button>
 											<button
-												className={`btn btn-sm ${assetViewMode === "list" ? "btn-active" : ""}`}
+												className={`btn btn-sm join-item ${assetViewMode === "list" ? "btn-active" : ""}`}
 												onClick={() => setAssetViewMode("list")}
 											>
 												<List size={16} />
@@ -388,55 +386,52 @@ export function CollectionDetailModal({
 							<div className="space-y-6">
 								{isEditing ? (
 									<div className="space-y-4">
-										<div className="form-control">
-											<label className="label">
-												<span className="label-text">Collection Name</span>
-											</label>
+										<div>
+											<label className="label" htmlFor="edit-collection-name">Collection Name</label>
 											<input
-												className="input input-bordered"
+												id="edit-collection-name"
+												className="input"
 												value={editForm.name}
 												onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
 											/>
 										</div>
-										<div className="form-control">
-											<label className="label">
-												<span className="label-text">Description</span>
-											</label>
+										<div>
+											<label className="label" htmlFor="edit-collection-description">Description</label>
 											<textarea
-												className="textarea textarea-bordered"
+												id="edit-collection-description"
+												className="textarea"
 												value={editForm.description}
 												onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
 												rows={3}
 											/>
 										</div>
 										<div className="grid grid-cols-2 gap-4">
-											<div className="form-control">
-												<label className="label">
-													<span className="label-text">Color</span>
-												</label>
+											<div>
+												<label className="label" htmlFor="edit-collection-color">Color</label>
 												<input
-													className="input input-bordered"
+													id="edit-collection-color"
+													className="input"
 													type="color"
 													value={editForm.color}
 													onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
 												/>
 											</div>
-											<div className="form-control">
-												<label className="label">
-													<span className="label-text">Icon (emoji)</span>
-												</label>
+											<div>
+												<label className="label" htmlFor="edit-collection-icon">Icon (emoji)</label>
 												<input
-													className="input input-bordered"
+													id="edit-collection-icon"
+													className="input"
 													value={editForm.icon}
 													onChange={(e) => setEditForm({ ...editForm, icon: e.target.value })}
 												/>
 											</div>
 										</div>
 										<div className="space-y-2">
-											<div className="form-control">
+											<div>
 												<label className="label cursor-pointer">
-													<span className="label-text">Public Collection</span>
+													<span>Public Collection</span>
 													<input
+														id="edit-is-public"
 														type="checkbox"
 														className="toggle toggle-primary"
 														checked={editForm.isPublic}
@@ -444,10 +439,11 @@ export function CollectionDetailModal({
 													/>
 												</label>
 											</div>
-											<div className="form-control">
+											<div>
 												<label className="label cursor-pointer">
-													<span className="label-text">Allow Contributions</span>
+													<span>Allow Contributions</span>
 													<input
+														id="edit-allow-contributions"
 														type="checkbox"
 														className="toggle toggle-primary"
 														checked={editForm.allowContributions}

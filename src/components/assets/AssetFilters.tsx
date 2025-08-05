@@ -209,9 +209,10 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 						{FILE_TYPE_OPTIONS.map((option) => {
 							const isChecked = getSelectedFileTypeCategories().includes(option.value);
 							return (
-								<div key={option.value} className="form-control">
+								<div key={option.value}>
 									<label className="cursor-pointer label justify-start gap-3">
 										<input
+											id={`filetype-${option.value}`}
 											type="checkbox"
 											className="checkbox checkbox-sm"
 											checked={isChecked}
@@ -223,7 +224,7 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 												handleFileTypeChange(newSelected);
 											}}
 										/>
-										<span className="label-text">{option.label}</span>
+										<span>{option.label}</span>
 									</label>
 								</div>
 							);
@@ -279,13 +280,12 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 				<div className="card-body">
 					<h4 className="card-title">Upload Date</h4>
 					<div className="grid grid-cols-2 gap-4">
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">From Date</span>
-							</label>
+						<div>
+							<label className="label" htmlFor="date-from">From Date</label>
 							<input
+								id="date-from"
 								type="date"
-								className="input input-bordered w-full"
+								className="input w-full"
 								value={formatDateForInput(localFilters.dateRange?.from)}
 								onChange={(e) => {
 									const from = new Date(e.target.value);
@@ -294,13 +294,12 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 								}}
 							/>
 						</div>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">To Date</span>
-							</label>
+						<div>
+							<label className="label" htmlFor="date-to">To Date</label>
 							<input
+								id="date-to"
 								type="date"
-								className="input input-bordered w-full"
+								className="input w-full"
 								value={formatDateForInput(localFilters.dateRange?.to)}
 								onChange={(e) => {
 									const to = new Date(e.target.value);
@@ -322,9 +321,10 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 							{tags.map((tag: any) => {
 								const isChecked = (localFilters.tags || []).includes(tag.name);
 								return (
-									<div key={tag.id} className="form-control">
+									<div key={tag.id}>
 										<label className="cursor-pointer label justify-start gap-3">
 											<input
+												id={`tag-${tag.id}`}
 												type="checkbox"
 												className="checkbox checkbox-sm"
 												checked={isChecked}
@@ -337,7 +337,7 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 												}}
 											/>
 											<div className="flex items-center gap-2">
-												<span className="label-text">{tag.name}</span>
+												<span>{tag.name}</span>
 												<span className="badge badge-sm badge-neutral">
 													{tag.usageCount}
 												</span>
@@ -356,13 +356,12 @@ export function AssetFilters({ filters, onChange }: AssetFiltersProps) {
 				<div className="card bg-base-100 shadow">
 					<div className="card-body">
 						<h4 className="card-title">Uploaded By</h4>
-						<div className="form-control">
-							<label className="label">
-								<span className="label-text">User</span>
-							</label>
+						<div>
+							<label className="label" htmlFor="uploader-select">User</label>
 							<div className="relative">
 								<select
-									className="select select-bordered w-full"
+									id="uploader-select"
+									className="select w-full"
 									value={localFilters.uploadedBy || ""}
 									onChange={(e) => {
 										const value = e.target.value;

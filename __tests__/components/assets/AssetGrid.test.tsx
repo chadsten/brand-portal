@@ -15,54 +15,75 @@ jest.mock('lucide-react', () => ({
   FileText: () => <div data-testid="file-icon" />,
 }));
 
-// Mock @heroui/react components
-jest.mock('@heroui/react', () => ({
+// Mock DaisyUI components (no library imports needed as DaisyUI uses pure CSS classes)
+// These mocks simulate the expected HTML structure with DaisyUI classes
+const mockDaisyUIComponents = {
   Card: ({ children, className, onPress, ...props }: any) => (
-    <div className={className} onClick={onPress} {...props}>
+    <div className={`card ${className || ''}`} onClick={onPress} {...props}>
       {children}
     </div>
   ),
   CardBody: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
+    <div className={`card-body ${className || ''}`}>{children}</div>
   ),
   CardFooter: ({ children, className }: any) => (
-    <div className={className}>{children}</div>
+    <div className={`card-actions ${className || ''}`}>{children}</div>
   ),
   Image: ({ src, alt, className }: any) => (
-    <img src={src} alt={alt} className={className} />
+    <img src={src} alt={alt} className={className || ''} />
   ),
   Checkbox: ({ isSelected, onValueChange, className }: any) => (
     <input
       type="checkbox"
+      className={`checkbox ${className || ''}`}
       checked={isSelected}
       onChange={(e) => onValueChange?.(e.target.checked)}
-      className={className}
     />
   ),
   Chip: ({ children, className }: any) => (
-    <span className={className}>{children}</span>
+    <span className={`badge ${className || ''}`}>{children}</span>
   ),
   Button: ({ children, onPress, startContent, className, isIconOnly }: any) => (
-    <button onClick={onPress} className={className}>
+    <button className={`btn ${className || ''}`} onClick={onPress}>
       {startContent}
       {!isIconOnly && children}
     </button>
   ),
-  Dropdown: ({ children }: any) => <div>{children}</div>,
-  DropdownTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenu: ({ children }: any) => <div role="menu">{children}</div>,
+  Dropdown: ({ children }: any) => <div className="dropdown">{children}</div>,
+  DropdownTrigger: ({ children }: any) => <div className="dropdown-trigger">{children}</div>,
+  DropdownMenu: ({ children }: any) => <div className="dropdown-content" role="menu">{children}</div>,
   DropdownItem: ({ children, onPress, startContent }: any) => (
-    <div role="menuitem" onClick={onPress}>
+    <div className="dropdown-item" role="menuitem" onClick={onPress}>
       {startContent}
       {children}
     </div>
   ),
   Progress: ({ value, className }: any) => (
-    <div className={className} aria-valuenow={value} role="progressbar">
-      Progress: {value}%
-    </div>
+    <progress 
+      className={`progress ${className || ''}`} 
+      value={value} 
+      max="100"
+      aria-valuenow={value} 
+      role="progressbar"
+    >
+      {value}%
+    </progress>
   ),
-}));
+};
+
+// Make components available globally for the test
+global.Card = mockDaisyUIComponents.Card;
+global.CardBody = mockDaisyUIComponents.CardBody;
+global.CardFooter = mockDaisyUIComponents.CardFooter;
+global.Image = mockDaisyUIComponents.Image;
+global.Checkbox = mockDaisyUIComponents.Checkbox;
+global.Chip = mockDaisyUIComponents.Chip;
+global.Button = mockDaisyUIComponents.Button;
+global.Dropdown = mockDaisyUIComponents.Dropdown;
+global.DropdownTrigger = mockDaisyUIComponents.DropdownTrigger;
+global.DropdownMenu = mockDaisyUIComponents.DropdownMenu;
+global.DropdownItem = mockDaisyUIComponents.DropdownItem;
+global.Progress = mockDaisyUIComponents.Progress;
 
 // Mock utility functions
 jest.mock('~/lib/utils', () => ({

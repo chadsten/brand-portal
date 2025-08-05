@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaisyUI Tab Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5.0.46/dist/full.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-6">DaisyUI 5 Tab Test - Verifying Fix</h1>
+    
+    <div class="tabs tabs-lifted w-full mb-8">
+        <input 
+            type="radio" 
+            name="test_tabs" 
+            class="tab" 
+            aria-label="Details" 
+            checked 
+        />
+        <div class="tab-content bg-base-100 border-base-300 rounded-b-lg border-2 border-t-0 p-6">
+            <h3 class="text-lg font-semibold mb-4">Details Tab Content</h3>
+            <div class="space-y-4">
+                <div class="card bg-base-100 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Basic Information</h4>
+                        <p>This simulates the renderBasicInfo() content</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Tags</h4>
+                        <p>This simulates the renderTags() content</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Collections</h4>
+                        <p>This simulates the renderCollections() content</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input 
+            type="radio" 
+            name="test_tabs" 
+            class="tab" 
+            aria-label="Versions" 
+        />
+        <div class="tab-content bg-base-100 border-base-300 rounded-b-lg border-2 border-t-0 p-6">
+            <h3 class="text-lg font-semibold mb-4">Versions Tab Content</h3>
+            <div class="space-y-4">
+                <div class="card bg-base-100 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Upload Information</h4>
+                        <p>This simulates the renderUploadInfo() content</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Version History</h4>
+                        <p>This simulates the renderVersions() content</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input 
+            type="radio" 
+            name="test_tabs" 
+            class="tab" 
+            aria-label="Activity" 
+        />
+        <div class="tab-content bg-base-100 border-base-300 rounded-b-lg border-2 border-t-0 p-6">
+            <h3 class="text-lg font-semibold mb-4">Activity Tab Content</h3>
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h4 class="card-title">Recent Activity</h4>
+                    <p>This simulates the renderActivity() content</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <div>
+            <h3 class="font-bold">Test Instructions:</h3>
+            <p>Click on each tab above. You should see:</p>
+            <ul class="list-disc ml-6 mt-2">
+                <li>Details tab should show Basic Information, Tags, and Collections cards</li>
+                <li>Versions tab should show Upload Information and Version History cards</li>
+                <li>Activity tab should show Recent Activity card</li>
+                <li>Tab content should change when clicking different tabs</li>
+                <li>Only one tab should be active/highlighted at a time</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
